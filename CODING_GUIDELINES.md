@@ -1,4 +1,4 @@
-# Antigravity Coding Guidelines & Architectural Blueprint
+# TrainTrack Coding Guidelines & Architectural Blueprint
 
 ## 1. Core Principles
 - **Compute-Efficiency First**: Minimize JS execution, leverage CSS for animations, and use service workers for intelligent caching.
@@ -15,9 +15,9 @@
 - **Service Worker**: Handle background sync for train schedules and push notifications for delays.
 - **Sitch MCP**: The "Brain" for automation - handles code generation, PR reviews, and deployment pipelines directly on GitHub.
 
-## 4. Prompt for Antigravity Coding (Walk in the Garden)
+## 4. Prompt for TrainTrack Coding (Walk in the Garden)
 
-> "Act as the lead architect for Antigravity. I have connected Sitch MCP and RailRadar API. Your task is to develop the app logic on GitHub.
+> "Act as the lead architect for TrainTrack. I have connected Sitch MCP and RailRadar API. Your task is to develop the app logic on GitHub.
 >
 > **The Garden Path Workflow:**
 > 1. **Seed**: Look at the current UI components in `index.html`.
