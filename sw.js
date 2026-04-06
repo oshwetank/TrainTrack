@@ -9,7 +9,7 @@
  *   Everything else  → Network-first with stale fallback
  */
 
-const CACHE_VERSION = 'v1';
+const CACHE_VERSION = 'v2';
 const STATIC_CACHE  = `traintrack-static-${CACHE_VERSION}`;
 const DATA_CACHE    = `traintrack-data-${CACHE_VERSION}`;
 const ALL_CACHES    = [STATIC_CACHE, DATA_CACHE];
