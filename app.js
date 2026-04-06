@@ -42,7 +42,7 @@ window.TrainTrack = (() => {
     /* RailRadar live API — third-party aggregator (railradar.in)
        Free-tier endpoints; falls back gracefully if unreachable.
        Replace with your key-authenticated base URL if available. */
-    RAILRADAR_BASE: 'rr_gzlo8ma4e46gy2jkkxd8jz1vn4o9zmdu',
+        RAILRADAR_BASE: 'https://railradar.in/api',
 
     /* How long (ms) before a live API response is considered stale */
     CACHE_TTL_MS: 30_000,
