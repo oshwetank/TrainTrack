@@ -1,0 +1,66 @@
+{
+  "name": "TrainTrack",
+  "short_name": "TrainTrack",
+  "description": "Mumbai Local Train Tracker — real-time departures, delays and platforms for Western, Central and Harbour lines.",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait-primary",
+  "background_color": "#12121d",
+  "theme_color": "#f59e0b",
+  "lang": "en-IN",
+  "categories": ["travel", "utilities", "navigation"],
+  "icons": [
+    {
+      "src": "icons/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "icons/icon-maskable-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "maskable"
+    },
+    {
+      "src": "icons/icon-maskable-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ],
+  "screenshots": [
+    {
+      "src": "screenshots/home.png",
+      "sizes": "390x844",
+      "type": "image/png",
+      "form_factor": "narrow",
+      "label": "Train Board — upcoming departures"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Church → Virar",
+      "short_name": "Church→Virar",
+      "description": "Quick search: Churchgate to Virar",
+      "url": "/?from=CSTM&to=VR&line=western",
+      "icons": [{ "src": "icons/icon-192.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "CSMT → Thane",
+      "short_name": "CSMT→Thane",
+      "description": "Quick search: CSMT to Thane",
+      "url": "/?from=CSMT&to=TNA&line=central",
+      "icons": [{ "src": "icons/icon-192.png", "sizes": "192x192" }]
+    }
+  ],
+  "prefer_related_applications": false,
+  "related_applications": []
+}
