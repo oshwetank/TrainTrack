@@ -34,7 +34,7 @@ window.TrainTrack = (() => {
      1. CONFIG
      ========================================================================= */
   const Config = Object.freeze({
-    VERSION: '1.1.0',
+    VERSION: '1.2.0',
 
     /* Static dataset — served from same origin, always available */
     SCHEDULES_URL: './schedules.json',
@@ -60,7 +60,7 @@ window.TrainTrack = (() => {
 
     /* IndexedDB */
     IDB_NAME:    'traintrack-db',
-    IDB_VERSION: 1,
+    IDB_VERSION: 2,
     IDB_STORE:   'schedule-cache',
 
     /* Lines */
