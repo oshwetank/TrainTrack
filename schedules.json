@@ -1,0 +1,416 @@
+{
+  "meta": {
+    "version": "1.0.0",
+    "generated": "2026-04-07",
+    "source": "Mumbai Suburban Railway public timetable (indicative)",
+    "note": "Static seed dataset — enriched at runtime via RailRadar API"
+  },
+  "stations": {
+    "western": [
+      { "code": "CCG",  "name": "Churchgate",       "zone": 1 },
+      { "code": "MCH",  "name": "Marine Lines",      "zone": 1 },
+      { "code": "CHG",  "name": "Charni Road",       "zone": 1 },
+      { "code": "GMD",  "name": "Grant Road",        "zone": 1 },
+      { "code": "MBD",  "name": "Mumbai Central",    "zone": 1 },
+      { "code": "MIM",  "name": "Mahalaxmi",         "zone": 1 },
+      { "code": "LWR",  "name": "Lower Parel",       "zone": 1 },
+      { "code": "ELP",  "name": "Elphinstone Road",  "zone": 1 },
+      { "code": "DDA",  "name": "Dadar",             "zone": 2 },
+      { "code": "PRB",  "name": "Prabhadevi",        "zone": 2 },
+      { "code": "MHM",  "name": "Mahim",             "zone": 2 },
+      { "code": "MHN",  "name": "Matunga Road",      "zone": 2 },
+      { "code": "VLE",  "name": "Ville Parle",       "zone": 2 },
+      { "code": "ADH",  "name": "Andheri",           "zone": 2 },
+      { "code": "JGA",  "name": "Jogeshwari",        "zone": 3 },
+      { "code": "GKP",  "name": "Goregaon",          "zone": 3 },
+      { "code": "MLD",  "name": "Malad",             "zone": 3 },
+      { "code": "KDA",  "name": "Kandivali",         "zone": 3 },
+      { "code": "BVE",  "name": "Borivali",          "zone": 3 },
+      { "code": "DDN",  "name": "Dahisar",           "zone": 4 },
+      { "code": "MIR",  "name": "Mira Road",         "zone": 4 },
+      { "code": "BPR",  "name": "Bhayander",         "zone": 4 },
+      { "code": "NIG",  "name": "Naigaon",           "zone": 4 },
+      { "code": "VSI",  "name": "Vasai Road",        "zone": 4 },
+      { "code": "NAL",  "name": "Nallasopara",       "zone": 4 },
+      { "code": "VR",   "name": "Virar",             "zone": 4 }
+    ],
+    "central": [
+      { "code": "CSMT", "name": "CSMT",              "zone": 1 },
+      { "code": "MSD",  "name": "Masjid",            "zone": 1 },
+      { "code": "SNT",  "name": "Sandhurst Road",    "zone": 1 },
+      { "code": "BYC",  "name": "Byculla",           "zone": 1 },
+      { "code": "CRD",  "name": "Chinchpokli",       "zone": 1 },
+      { "code": "CRY",  "name": "Currey Road",       "zone": 1 },
+      { "code": "PRB",  "name": "Parel",             "zone": 1 },
+      { "code": "DDR",  "name": "Dadar",             "zone": 2 },
+      { "code": "MTG",  "name": "Matunga",           "zone": 2 },
+      { "code": "SKN",  "name": "Sion",              "zone": 2 },
+      { "code": "KRD",  "name": "Kurla",             "zone": 2 },
+      { "code": "VDH",  "name": "Vidyavihar",        "zone": 2 },
+      { "code": "GHK",  "name": "Ghatkopar",         "zone": 2 },
+      { "code": "VKL",  "name": "Vikhroli",          "zone": 3 },
+      { "code": "KJT",  "name": "Kanjurmarg",        "zone": 3 },
+      { "code": "BHD",  "name": "Bhandup",           "zone": 3 },
+      { "code": "NHD",  "name": "Nahur",             "zone": 3 },
+      { "code": "MLD",  "name": "Mulund",            "zone": 3 },
+      { "code": "TNA",  "name": "Thane",             "zone": 3 },
+      { "code": "CLA",  "name": "Kalwa",             "zone": 4 },
+      { "code": "MBE",  "name": "Mumbra",            "zone": 4 },
+      { "code": "DIV",  "name": "Diva",              "zone": 4 },
+      { "code": "DDE",  "name": "Dombivli",          "zone": 4 },
+      { "code": "TLA",  "name": "Thakurli",          "zone": 4 },
+      { "code": "KYN",  "name": "Kalyan",            "zone": 4 },
+      { "code": "KSR",  "name": "Kasara",            "zone": 5 },
+      { "code": "KPL",  "name": "Khopoli",           "zone": 5 }
+    ],
+    "harbour": [
+      { "code": "CSMT", "name": "CSMT",              "zone": 1 },
+      { "code": "DOS",  "name": "Dockyard Road",     "zone": 1 },
+      { "code": "RED",  "name": "Reay Road",         "zone": 1 },
+      { "code": "CGR",  "name": "Cotton Green",      "zone": 1 },
+      { "code": "SGR",  "name": "Sewri",             "zone": 1 },
+      { "code": "TGR",  "name": "Tilak Nagar",       "zone": 1 },
+      { "code": "CEK",  "name": "Chembur",           "zone": 2 },
+      { "code": "GVN",  "name": "Govandi",           "zone": 2 },
+      { "code": "MNK",  "name": "Mankhurd",          "zone": 2 },
+      { "code": "VLE",  "name": "Vashi",             "zone": 3 },
+      { "code": "SHR",  "name": "Sanpada",           "zone": 3 },
+      { "code": "JUJ",  "name": "Juinagar",          "zone": 3 },
+      { "code": "NVS",  "name": "Nerul",             "zone": 3 },
+      { "code": "BKH",  "name": "Belapur CBD",       "zone": 4 },
+      { "code": "KHR",  "name": "Kharghar",          "zone": 4 },
+      { "code": "PNL",  "name": "Panvel",            "zone": 4 }
+    ]
+  },
+  "trains": {
+    "western": [
+      {
+        "number": "90001",
+        "name": "Virar Fast",
+        "type": "fast",
+        "from": "CCG", "to": "VR",
+        "departures": [
+          { "time": "05:58", "platform": 1 },
+          { "time": "06:28", "platform": 2 },
+          { "time": "07:05", "platform": 1 },
+          { "time": "08:15", "platform": 3 },
+          { "time": "09:45", "platform": 1 },
+          { "time": "11:30", "platform": 2 },
+          { "time": "13:00", "platform": 1 },
+          { "time": "15:30", "platform": 3 },
+          { "time": "17:15", "platform": 1 },
+          { "time": "19:55", "platform": 2 },
+          { "time": "21:20", "platform": 1 },
+          { "time": "23:12", "platform": 4 }
+        ],
+        "stops": ["CCG","MBD","DDA","ADH","BVE","VR"],
+        "durationMins": 74
+      },
+      {
+        "number": "90003",
+        "name": "Borivali Fast",
+        "type": "fast",
+        "from": "CCG", "to": "BVE",
+        "departures": [
+          { "time": "06:00", "platform": 2 },
+          { "time": "06:45", "platform": 1 },
+          { "time": "07:30", "platform": 2 },
+          { "time": "08:50", "platform": 1 },
+          { "time": "10:10", "platform": 3 },
+          { "time": "12:40", "platform": 2 },
+          { "time": "14:20", "platform": 1 },
+          { "time": "16:00", "platform": 2 },
+          { "time": "18:30", "platform": 1 },
+          { "time": "20:45", "platform": 3 },
+          { "time": "22:30", "platform": 2 }
+        ],
+        "stops": ["CCG","MBD","DDA","ADH","BVE"],
+        "durationMins": 55
+      },
+      {
+        "number": "90005",
+        "name": "Vasai Fast",
+        "type": "fast",
+        "from": "CCG", "to": "VSI",
+        "departures": [
+          { "time": "06:15", "platform": 3 },
+          { "time": "07:48", "platform": 2 },
+          { "time": "09:25", "platform": 1 },
+          { "time": "11:00", "platform": 3 },
+          { "time": "13:30", "platform": 2 },
+          { "time": "16:45", "platform": 1 },
+          { "time": "19:00", "platform": 3 },
+          { "time": "21:50", "platform": 2 }
+        ],
+        "stops": ["CCG","MBD","DDA","ADH","BVE","MIR","VSI"],
+        "durationMins": 65
+      },
+      {
+        "number": "90101",
+        "name": "Churchgate Slow",
+        "type": "slow",
+        "from": "CCG", "to": "BVE",
+        "departures": [
+          { "time": "05:30", "platform": 6 },
+          { "time": "06:05", "platform": 5 },
+          { "time": "06:50", "platform": 6 },
+          { "time": "07:20", "platform": 5 },
+          { "time": "08:00", "platform": 6 },
+          { "time": "09:30", "platform": 5 },
+          { "time": "11:15", "platform": 6 },
+          { "time": "13:45", "platform": 5 },
+          { "time": "15:20", "platform": 6 },
+          { "time": "17:40", "platform": 5 },
+          { "time": "19:20", "platform": 6 },
+          { "time": "21:00", "platform": 5 },
+          { "time": "23:05", "platform": 6 }
+        ],
+        "stops": ["CCG","MCH","CHG","GMD","MBD","MIM","LWR","ELP","DDA","PRB","MHM","MHN","VLE","ADH","JGA","GKP","MLD","KDA","BVE"],
+        "durationMins": 68
+      },
+      {
+        "number": "91001",
+        "name": "Virar AC Special",
+        "type": "ac",
+        "from": "CCG", "to": "VR",
+        "departures": [
+          { "time": "07:35", "platform": 4 },
+          { "time": "09:05", "platform": 4 },
+          { "time": "18:05", "platform": 4 },
+          { "time": "19:35", "platform": 4 }
+        ],
+        "stops": ["CCG","MBD","DDA","ADH","BVE","VR"],
+        "durationMins": 68
+      },
+      {
+        "number": "90007",
+        "name": "Dahisar Fast",
+        "type": "fast",
+        "from": "CCG", "to": "DDN",
+        "departures": [
+          { "time": "06:38", "platform": 1 },
+          { "time": "08:22", "platform": 2 },
+          { "time": "10:55", "platform": 1 },
+          { "time": "14:10", "platform": 2 },
+          { "time": "17:00", "platform": 1 },
+          { "time": "20:10", "platform": 2 },
+          { "time": "22:00", "platform": 1 }
+        ],
+        "stops": ["CCG","MBD","DDA","ADH","BVE","DDN"],
+        "durationMins": 58
+      }
+    ],
+    "central": [
+      {
+        "number": "91101",
+        "name": "Kasara Express",
+        "type": "fast",
+        "from": "CSMT", "to": "KSR",
+        "departures": [
+          { "time": "06:05", "platform": 1 },
+          { "time": "07:50", "platform": 2 },
+          { "time": "09:20", "platform": 1 },
+          { "time": "12:10", "platform": 3 },
+          { "time": "15:35", "platform": 1 },
+          { "time": "18:20", "platform": 2 },
+          { "time": "21:00", "platform": 1 }
+        ],
+        "stops": ["CSMT","BYC","DDR","TNA","KYN","KSR"],
+        "durationMins": 150
+      },
+      {
+        "number": "91103",
+        "name": "Khopoli Local",
+        "type": "fast",
+        "from": "CSMT", "to": "KPL",
+        "departures": [
+          { "time": "06:30", "platform": 4 },
+          { "time": "08:45", "platform": 3 },
+          { "time": "11:00", "platform": 4 },
+          { "time": "14:30", "platform": 3 },
+          { "time": "17:00", "platform": 4 },
+          { "time": "20:00", "platform": 3 },
+          { "time": "22:15", "platform": 4 }
+        ],
+        "stops": ["CSMT","BYC","DDR","TNA","KYN","KPL"],
+        "durationMins": 120
+      },
+      {
+        "number": "91201",
+        "name": "Thane Fast",
+        "type": "fast",
+        "from": "CSMT", "to": "TNA",
+        "departures": [
+          { "time": "05:45", "platform": 2 },
+          { "time": "06:20", "platform": 1 },
+          { "time": "07:10", "platform": 2 },
+          { "time": "07:55", "platform": 3 },
+          { "time": "09:00", "platform": 2 },
+          { "time": "10:30", "platform": 1 },
+          { "time": "12:00", "platform": 2 },
+          { "time": "14:15", "platform": 3 },
+          { "time": "16:00", "platform": 2 },
+          { "time": "18:00", "platform": 1 },
+          { "time": "19:50", "platform": 2 },
+          { "time": "21:30", "platform": 3 },
+          { "time": "23:00", "platform": 2 }
+        ],
+        "stops": ["CSMT","BYC","DDR","MTG","SKN","KRD","GHK","TNA"],
+        "durationMins": 45
+      },
+      {
+        "number": "91301",
+        "name": "Kalyan Slow",
+        "type": "slow",
+        "from": "CSMT", "to": "KYN",
+        "departures": [
+          { "time": "06:00", "platform": 5 },
+          { "time": "06:40", "platform": 6 },
+          { "time": "07:25", "platform": 5 },
+          { "time": "08:30", "platform": 6 },
+          { "time": "10:05", "platform": 5 },
+          { "time": "12:30", "platform": 6 },
+          { "time": "15:00", "platform": 5 },
+          { "time": "17:25", "platform": 6 },
+          { "time": "19:30", "platform": 5 },
+          { "time": "21:45", "platform": 6 },
+          { "time": "23:15", "platform": 5 }
+        ],
+        "stops": ["CSMT","MSD","SNT","BYC","CRD","CRY","PRB","DDR","MTG","SKN","KRD","VDH","GHK","VKL","KJT","BHD","NHD","MLD","TNA","CLA","MBE","DIV","DDE","TLA","KYN"],
+        "durationMins": 85
+      },
+      {
+        "number": "91401",
+        "name": "Dombivli Fast",
+        "type": "fast",
+        "from": "CSMT", "to": "DDE",
+        "departures": [
+          { "time": "06:10", "platform": 3 },
+          { "time": "07:40", "platform": 2 },
+          { "time": "09:10", "platform": 3 },
+          { "time": "11:20", "platform": 2 },
+          { "time": "13:50", "platform": 3 },
+          { "time": "16:30", "platform": 2 },
+          { "time": "18:50", "platform": 3 },
+          { "time": "21:10", "platform": 2 }
+        ],
+        "stops": ["CSMT","BYC","DDR","TNA","DIV","DDE"],
+        "durationMins": 60
+      },
+      {
+        "number": "91501",
+        "name": "Ghatkopar Fast",
+        "type": "fast",
+        "from": "CSMT", "to": "GHK",
+        "departures": [
+          { "time": "06:25", "platform": 1 },
+          { "time": "08:05", "platform": 2 },
+          { "time": "10:00", "platform": 1 },
+          { "time": "13:20", "platform": 2 },
+          { "time": "16:10", "platform": 1 },
+          { "time": "19:00", "platform": 2 },
+          { "time": "21:55", "platform": 1 }
+        ],
+        "stops": ["CSMT","BYC","DDR","SKN","KRD","GHK"],
+        "durationMins": 32
+      }
+    ],
+    "harbour": [
+      {
+        "number": "92001",
+        "name": "Panvel Fast",
+        "type": "fast",
+        "from": "CSMT", "to": "PNL",
+        "departures": [
+          { "time": "06:00", "platform": 7 },
+          { "time": "07:15", "platform": 8 },
+          { "time": "08:30", "platform": 7 },
+          { "time": "10:00", "platform": 8 },
+          { "time": "12:00", "platform": 7 },
+          { "time": "14:30", "platform": 8 },
+          { "time": "17:00", "platform": 7 },
+          { "time": "19:00", "platform": 8 },
+          { "time": "21:00", "platform": 7 },
+          { "time": "22:45", "platform": 8 }
+        ],
+        "stops": ["CSMT","CEK","MNK","VLE","NVS","BKH","PNL"],
+        "durationMins": 68
+      },
+      {
+        "number": "92101",
+        "name": "Vashi Shuttle",
+        "type": "shuttle",
+        "from": "CSMT", "to": "VLE",
+        "departures": [
+          { "time": "06:30", "platform": 7 },
+          { "time": "07:45", "platform": 8 },
+          { "time": "09:00", "platform": 7 },
+          { "time": "11:00", "platform": 8 },
+          { "time": "13:30", "platform": 7 },
+          { "time": "16:00", "platform": 8 },
+          { "time": "18:30", "platform": 7 },
+          { "time": "20:30", "platform": 8 },
+          { "time": "22:30", "platform": 7 }
+        ],
+        "stops": ["CSMT","SGR","TGR","CEK","GOV","MNK","VLE"],
+        "durationMins": 42
+      },
+      {
+        "number": "92201",
+        "name": "Belapur Local",
+        "type": "fast",
+        "from": "CSMT", "to": "BKH",
+        "departures": [
+          { "time": "06:45", "platform": 8 },
+          { "time": "08:00", "platform": 7 },
+          { "time": "09:30", "platform": 8 },
+          { "time": "11:45", "platform": 7 },
+          { "time": "14:00", "platform": 8 },
+          { "time": "16:30", "platform": 7 },
+          { "time": "18:00", "platform": 8 },
+          { "time": "20:00", "platform": 7 },
+          { "time": "22:00", "platform": 8 }
+        ],
+        "stops": ["CSMT","CEK","MNK","VLE","JUJ","NVS","BKH"],
+        "durationMins": 58
+      },
+      {
+        "number": "92301",
+        "name": "Chembur Slow",
+        "type": "slow",
+        "from": "CSMT", "to": "CEK",
+        "departures": [
+          { "time": "06:10", "platform": 7 },
+          { "time": "07:00", "platform": 8 },
+          { "time": "08:15", "platform": 7 },
+          { "time": "09:45", "platform": 8 },
+          { "time": "11:30", "platform": 7 },
+          { "time": "13:00", "platform": 8 },
+          { "time": "15:15", "platform": 7 },
+          { "time": "17:30", "platform": 8 },
+          { "time": "19:15", "platform": 7 },
+          { "time": "21:15", "platform": 8 },
+          { "time": "23:00", "platform": 7 }
+        ],
+        "stops": ["CSMT","DOS","RED","CGR","SGR","TGR","CEK"],
+        "durationMins": 28
+      },
+      {
+        "number": "92401",
+        "name": "Nerul Express",
+        "type": "fast",
+        "from": "CSMT", "to": "NVS",
+        "departures": [
+          { "time": "07:00", "platform": 7 },
+          { "time": "09:15", "platform": 8 },
+          { "time": "12:30", "platform": 7 },
+          { "time": "15:45", "platform": 8 },
+          { "time": "18:45", "platform": 7 },
+          { "time": "21:30", "platform": 8 }
+        ],
+        "stops": ["CSMT","CEK","GOV","MNK","VLE","SHR","JUJ","NVS"],
+        "durationMins": 52
+      }
+    ]
+  }
+}
