@@ -1,20 +1,22 @@
 /**
  * TrainTrack — app.js
- * Mumbai Local Train Tracker · Phase 2: The Water
+ * Mumbai Local Train Tracker · Phase 3: Bloom (PWA Resilience)
  *
- * Architecture: Single TrainTrack namespace, Vanilla ES Modules
+ * Architecture: Single TrainTrack namespace, Vanilla JS (zero framework)
  * Strategy:    Stale-While-Revalidate — render schedules.json instantly,
- *              hydrate with RailRadar live data in background
+ *              hydrate with RailRadar live data in background.
+ *              Background Sync API for schedule refresh on reconnect.
  * Performance: All DOM mutations via requestAnimationFrame
- *              30-second live polling (paused when tab hidden)
+ *              30-second live polling (paused on Page Visibility hidden)
+ *              AbortSignal.timeout(8000) on all outbound fetches
  *
  * Modules:
- *   TrainTrack.Config    — constants, API endpoints
- *   TrainTrack.Store     — localStorage + IndexedDB persistence
- *   TrainTrack.API       — fetch with S-W-R caching
- *   TrainTrack.Search    — station autocomplete (trie prefix match)
- *   TrainTrack.UI        — DOM binding, RAF render queue
- *   TrainTrack.Scheduler — polling interval manager
+ *   TrainTrack.Config    — constants, API endpoints, cache keys
+ *   TrainTrack.Store     — localStorage prefs/favs + IndexedDB schedule cache
+ *   TrainTrack.API       — fetch wrapper with in-memory SWR cache
+ *   TrainTrack.Search    — O(n) station prefix-match autocomplete
+ *   TrainTrack.UI        — RAF render queue, template cloning, glass drawer
+ *   TrainTrack.Scheduler — visibility-aware 30s polling manager
  *   TrainTrack.App       — bootstrap & event orchestration
  */
 
@@ -32,7 +34,7 @@ window.TrainTrack = (() => {
      1. CONFIG
      ========================================================================= */
   const Config = Object.freeze({
-    VERSION: '1.0.0',
+    VERSION: '1.1.0',
 
     /* Static dataset — served from same origin, always available */
     SCHEDULES_URL: './schedules.json',
@@ -987,9 +989,29 @@ window.TrainTrack = (() => {
       UI.syncToggle(UI.els.notifToggle, result === 'granted');
     }
 
-    /* ── 7l. Online / offline events ── */
-    function _onOnline()  { UI.setOnlineState(true);  _hydrate(); }
-    function _onOffline() { UI.setOnlineState(false); }
+    /* ── 7l. Background Sync registration ── */
+    function _registerBgSync() {
+      if ('serviceWorker' in navigator && 'SyncManager' in window) {
+        navigator.serviceWorker.ready
+          .then(sw => sw.sync.register('sync-schedules'))
+          .catch(e => console.warn('[App] BgSync registration failed:', e));
+      }
+    }
+
+    /* ── 7m. Online / offline events ── */
+    let _offlineTimer = null;
+    function _onOnline() {
+      clearTimeout(_offlineTimer);
+      UI.setOnlineState(true);
+      _hydrate();
+      _registerBgSync(); /* schedule a SW-managed refresh on reconnect */
+    }
+    function _onOffline() {
+      /* Debounce 3 s — transient drops must not flash the OFFLINE badge */
+      _offlineTimer = setTimeout(() => {
+        if (!navigator.onLine) UI.setOnlineState(false);
+      }, 3000);
+    }
 
     /* ── 7m. Wire all events ── */
     function _bindEvents() {
@@ -1105,6 +1127,10 @@ window.TrainTrack = (() => {
         /* Then every 30 seconds */
         Scheduler.start(_hydrate);
       }
+
+      /* STEP 5: Register Background Sync so SW refreshes schedules on next
+         network connection (even if the app is closed)                  */
+      if (navigator.onLine) _registerBgSync();
 
       console.log(`[TrainTrack] v${Config.VERSION} booted ✓`);
     }
