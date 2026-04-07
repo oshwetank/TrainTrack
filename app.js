@@ -57,6 +57,8 @@ window.TrainTrack = (() => {
     LS_CLOCK24:    'tt_clock24',
     LS_REFRESH:    'tt_autorefresh',
     LS_DISMISSED:  'tt_dismissed_disruptions',
+    WALK_TIME_KEY: 'traintrack_walk_time',
+    DEFAULT_WALK_TIME: 10,
 
     /* IndexedDB */
     IDB_NAME:    'traintrack-db',
@@ -512,8 +514,8 @@ window.TrainTrack = (() => {
       const withMins = departures.map(d => {
         const [h, m] = d.time.split(':').map(Number);
         const totalMins = h * 60 + m;
-        /* Wrap around midnight: if departure is before now, it's tomorrow */
-        const effective = totalMins < nowMins ? totalMins + 1440 : totalMins;
+        /* Wrap around midnight: if departure is before now (but not within past 10 mins), it's tomorrow */
+        const effective = (totalMins < nowMins && (nowMins - totalMins) > 10) ? totalMins + 1440 : totalMins;
         return { ...d, effectiveMins: effective };
       });
       withMins.sort((a, b) => a.effectiveMins - b.effectiveMins);
@@ -572,6 +574,20 @@ window.TrainTrack = (() => {
       const badge = tpl.querySelector('.train-status-badge');
       badge.className = cls;
       badge.textContent = text;
+      
+      /* USP: Missed train state */
+      const [h, m] = effectiveTime.split(':').map(Number);
+      const now = new Date();
+      const nowMins = now.getHours() * 60 + now.getMinutes();
+      let diff = (h * 60 + m + delay) - nowMins;
+      if (diff < -720) diff += 1440; // overnight
+      if (diff <= 0) {
+        const msg = tpl.querySelector('.missed-train-message');
+        if (msg) {
+           msg.style.display = 'block';
+           /* Ideally we'd calculate the exact next train time, but for the USP visual we show default visual since we are rendering the missed card now */
+        }
+      }
 
       return tpl;
     }
@@ -608,7 +624,32 @@ window.TrainTrack = (() => {
       /* Sort by effective departure time (soonest first) */
       cards.sort((a, b) => a.departure.effectiveMins - b.departure.effectiveMins);
 
-      if (!cards.length) { showEmpty(); return; }
+      const leaveCardEl = document.getElementById('leave-by-card');
+
+      if (!cards.length) { 
+        if (leaveCardEl) leaveCardEl.style.display = 'none';
+        showEmpty(); 
+        return; 
+      }
+
+      /* USP: Leave by Logic */
+      if (leaveCardEl) {
+         try {
+           const nextCard = cards.find(c => {
+               const nowMins = new Date().getHours() * 60 + new Date().getMinutes();
+               return (c.departure.effectiveMins - nowMins) > 0;
+           }) || cards[0];
+           
+           const leaveByResult = Utils.calculateLeaveByTime(nextCard.departure.time);
+           if (leaveByResult) {
+              document.getElementById('leave-by-time').textContent = leaveByResult.leaveBy;
+              document.getElementById('leave-by-subtitle').textContent = `Leaves in ${leaveByResult.minutesUntilLeave} mins (includes ${Utils.getWalkTime()}m walk)`;
+              leaveCardEl.style.display = 'flex';
+           } else {
+              leaveCardEl.style.display = 'none';
+           }
+         } catch(e) { leaveCardEl.style.display = 'none'; }
+      }
 
       enqueue(() => {
         /* Build fragment for batch DOM insertion (single reflow) */
@@ -808,6 +849,39 @@ window.TrainTrack = (() => {
 
     return { start, stop, setEnabled };
   })();
+
+  /* =========================================================================
+     UTILS — calculation helpers
+     ========================================================================= */
+  const Utils = {
+    getWalkTime() {
+      const stored = localStorage.getItem(Config.WALK_TIME_KEY);
+      return stored ? parseInt(stored, 10) : Config.DEFAULT_WALK_TIME;
+    },
+    
+    setWalkTime(minutes) {
+      localStorage.setItem(Config.WALK_TIME_KEY, minutes.toString());
+    },
+    
+    calculateLeaveByTime(nextTrainTime) {
+      const walkMinutes = this.getWalkTime();
+      const now = new Date();
+      const trainDeparts = new Date();
+      if (!nextTrainTime) return null;
+      const [hours, minutes] = nextTrainTime.split(':').map(Number);
+      trainDeparts.setHours(hours, minutes, 0, 0);
+      
+      if (trainDeparts < now) trainDeparts.setDate(trainDeparts.getDate() + 1);
+      
+      const leaveBy = new Date(trainDeparts.getTime() - (walkMinutes * 60 * 1000));
+      const minutesUntilLeave = Math.floor((leaveBy - now) / 60000);
+      
+      return {
+        leaveBy: leaveBy.toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit', hour12: false }),
+        minutesUntilLeave: minutesUntilLeave
+      };
+    }
+  };
 
   /* =========================================================================
      7. CROWD HEURISTIC — compute crowd level from schedule + time context
@@ -1306,6 +1380,21 @@ window.TrainTrack = (() => {
         Scheduler.start(_hydrate);
       }
 
+      /* USP: Walk time settings click handler */
+      const walkBtn = document.getElementById('walk-time-settings');
+      if (walkBtn) {
+        walkBtn.addEventListener('click', () => {
+          const current = Utils.getWalkTime();
+          const newTime = prompt(`Walk time to station (minutes):`, current);
+          if (newTime && !isNaN(newTime)) {
+            Utils.setWalkTime(parseInt(newTime));
+            if (_scheduleData) {
+               UI.renderBoard(_scheduleData, UI.currentLine, document.querySelector('.station-input[data-role="from"]').value || null, document.querySelector('.station-input[data-role="to"]').value || null);
+            }
+          }
+        });
+      }
+
       /* STEP 5: Register Background Sync so SW refreshes schedules on next
          network connection (even if the app is closed)                  */
       if (navigator.onLine) _registerBgSync();
@@ -1379,7 +1468,7 @@ window.TrainTrack = (() => {
   /* ─────────────────────────────────────────────────────────────────────────
      EXPORT public API
   ───────────────────────────────────────────────────────────────────────── */
-  return { Config, Store, API, Search, UI, Scheduler, CrowdHeuristic, Disruptions, App };
+  return { Config, Store, API, Search, UI, Scheduler, Utils, CrowdHeuristic, Disruptions, App };
 
 })(); /* end TrainTrack IIFE */
 
