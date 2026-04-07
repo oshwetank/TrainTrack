@@ -1300,11 +1300,14 @@ window.TrainTrack = (() => {
          Only when online; respects autorefresh preference               */
       const prefs = Store.getPrefs();
       if (prefs.autoref !== false) {
+        /* First live refresh after schedules are shown */
         setTimeout(() => _hydrate(), 2000);
+        /* Then every 30 seconds */
         Scheduler.start(_hydrate);
       }
 
-      /* STEP 5: Register Background Sync */
+      /* STEP 5: Register Background Sync so SW refreshes schedules on next
+         network connection (even if the app is closed)                  */
       if (navigator.onLine) _registerBgSync();
 
       /* STEP 6: SOS emergency button ─────────────────────────────────────
