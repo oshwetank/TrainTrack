@@ -64,11 +64,12 @@ window.TrainTrack = (() => {
     IDB_STORE:   'schedule-cache',
 
     /* Suburban Lines */
-    LINES: ['western', 'central', 'harbour'],
+    LINES: ['western', 'central', 'harbour', 'trans_harbour'],
     LINE_COLORS: {
       western: '#3b82f6',
       central: '#ef4444',
       harbour: '#8b5cf6',
+      trans_harbour: '#10b981',  // Green
     },
 
     /* Metro Lines (operational 2026) */

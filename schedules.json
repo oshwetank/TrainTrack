@@ -1,7 +1,7 @@
 {
   "meta": {
-    "version": "1.3.0",
-    "generated": "2026-04-07",
+    "version": "1.4.0",
+    "lastUpdated": "2026-04-07",
     "source": "Mumbai Suburban Railway public timetable (indicative)",
     "note": "Static seed dataset — enriched at runtime via RailRadar API"
   },
@@ -72,7 +72,22 @@
       { "code": "THK",  "name": "Thakurli",         "zone": 4 },
       { "code": "KYN",  "name": "Kalyan",           "zone": 4 },
       { "code": "KSRA", "name": "Kasara",           "zone": 5 },
-      { "code": "KHPI", "name": "Khopoli",          "zone": 5 }
+      { "code": "KHPI", "name": "Khopoli",          "zone": 5 },
+      { "code": "DVA",  "name": "Diva Junction",    "zone": 4 },
+      { "code": "KOPR", "name": "Kopar",            "zone": 4 },
+      { "code": "DTVL", "name": "Dativli",          "zone": 5 },
+      { "code": "NIIJ", "name": "Nilje",            "zone": 5 },
+      { "code": "VGI",  "name": "Vangani",          "zone": 5 },
+      { "code": "SHLU", "name": "Shelu",            "zone": 5 },
+      { "code": "NRL",  "name": "Neral",            "zone": 6 },
+      { "code": "BIV",  "name": "Bhivpuri Road",    "zone": 6 },
+      { "code": "KJT",  "name": "Karjat",           "zone": 6 },
+      { "code": "AIRL", "name": "Airoli",           "zone": 4 },
+      { "code": "RABE", "name": "Rabale",           "zone": 4 },
+      { "code": "GNSL", "name": "Ghansoli",         "zone": 4 },
+      { "code": "KPKK", "name": "Kopar Khairane",   "zone": 4 },
+      { "code": "TRBE", "name": "Turbhe",           "zone": 4 },
+      { "code": "SWDV", "name": "Seawoods-Darave",  "zone": 4 }
     ],
     "harbour": [
       { "code": "CSMT",   "name": "CSMT",               "zone": 1 },
@@ -106,6 +121,20 @@
       { "code": "TRGR",   "name": "Targhar",             "zone": 5 },
       { "code": "GVHN",   "name": "Gavhan",              "zone": 5 },
       { "code": "PNVL",   "name": "Panvel",              "zone": 4 }
+    ],
+    "trans_harbour": [
+      { "code": "TNA",  "name": "Thane",            "zone": 3 },
+      { "code": "AIRL", "name": "Airoli",           "zone": 4 },
+      { "code": "RABE", "name": "Rabale",           "zone": 4 },
+      { "code": "GNSL", "name": "Ghansoli",         "zone": 4 },
+      { "code": "KPKK", "name": "Kopar Khairane",   "zone": 4 },
+      { "code": "NEU",  "name": "Nerul",            "zone": 4 },
+      { "code": "SWDV", "name": "Seawoods-Darave",  "zone": 4 },
+      { "code": "BEPR", "name": "CBD Belapur",      "zone": 4 },
+      { "code": "KHAG", "name": "Kharghar",         "zone": 5 },
+      { "code": "MNSV", "name": "Mansarovar",       "zone": 5 },
+      { "code": "KNDS", "name": "Khandeshwar",      "zone": 5 },
+      { "code": "PNVL", "name": "Panvel",           "zone": 5 }
     ],
     "metro_aqua": [
       { "code": "M1_VSK",  "name": "Versova",          "zone": 1, "interchanges": ["ADH"] },
