@@ -34,15 +34,16 @@ window.TrainTrack = (() => {
      1. CONFIG
      ========================================================================= */
   const Config = Object.freeze({
-    VERSION: '1.2.0',
+    VERSION: '1.3.0',
 
     /* Static dataset — served from same origin, always available */
-    SCHEDULES_URL: './schedules.json',
+    SCHEDULES_URL:    './schedules.json',
+    DISRUPTIONS_URL:  './disruptions.json',
 
     /* RailRadar live API — third-party aggregator (railradar.in)
        Free-tier endpoints; falls back gracefully if unreachable.
        Replace with your key-authenticated base URL if available. */
-        RAILRADAR_BASE: 'https://railradar.in/api',
+    RAILRADAR_BASE: 'https://railradar.in/api',
 
     /* How long (ms) before a live API response is considered stale */
     CACHE_TTL_MS: 30_000,
@@ -51,25 +52,49 @@ window.TrainTrack = (() => {
     POLL_INTERVAL_MS: 30_000,
 
     /* localStorage keys */
-    LS_LINE:     'tt_line',
-    LS_FROM:     'tt_from',
-    LS_TO:       'tt_to',
-    LS_FAVS:     'tt_favs',
-    LS_CLOCK24:  'tt_clock24',
-    LS_REFRESH:  'tt_autorefresh',
+    LS_LINE:       'tt_line',
+    LS_FROM:       'tt_from',
+    LS_TO:         'tt_to',
+    LS_FAVS:       'tt_favs',
+    LS_CLOCK24:    'tt_clock24',
+    LS_REFRESH:    'tt_autorefresh',
+    LS_DISMISSED:  'tt_dismissed_disruptions',
 
     /* IndexedDB */
     IDB_NAME:    'traintrack-db',
     IDB_VERSION: 2,
     IDB_STORE:   'schedule-cache',
 
-    /* Lines */
+    /* Suburban Lines */
     LINES: ['western', 'central', 'harbour'],
     LINE_COLORS: {
       western: '#3b82f6',
       central: '#ef4444',
       harbour: '#8b5cf6',
     },
+
+    /* Metro Lines (operational 2026) */
+    METRO_LINES: [
+      { id: 'metro_aqua',   name: 'Metro Line 1 (Aqua)', color: '#06b6d4' },
+      { id: 'metro_red',    name: 'Metro Line 2A (Red)', color: '#ef4444' },
+      { id: 'metro_yellow', name: 'Metro Line 7 (Yellow)', color: '#eab308' },
+    ],
+
+    /* Peak hour windows — 24-hour format */
+    PEAK_HOURS: Object.freeze({
+      morning: { start: 7,  end: 11 },  /* 07:00–10:59 */
+      evening: { start: 17, end: 22 },  /* 17:00–21:59 */
+    }),
+
+    /* Mumbai emergency helpline numbers */
+    EMERGENCY_NUMBERS: Object.freeze({
+      railway_helpline: '18001111392',
+      railway_security: '9004494949',
+      rpf_emergency:    '182',
+      police:           '100',
+      ambulance:        '108',
+      women_helpline:   '1091',
+    }),
   });
 
   /* =========================================================================
