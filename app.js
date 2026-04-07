@@ -34,15 +34,14 @@ window.TrainTrack = (() => {
      1. CONFIG
      ========================================================================= */
   const Config = Object.freeze({
-    VERSION: '1.2.0',
+    VERSION: '1.3.0',
 
     /* Static dataset — served from same origin, always available */
-    SCHEDULES_URL: './schedules.json',
+    SCHEDULES_URL:    './schedules.json',
+    DISRUPTIONS_URL:  './disruptions.json',
 
-    /* RailRadar live API — third-party aggregator (railradar.in)
-       Free-tier endpoints; falls back gracefully if unreachable.
-       Replace with your key-authenticated base URL if available. */
-        RAILRADAR_BASE: 'https://railradar.in/api',
+    /* RailRadar live API — third-party aggregator (railradar.in) */
+    RAILRADAR_BASE: 'https://railradar.in/api',
 
     /* How long (ms) before a live API response is considered stale */
     CACHE_TTL_MS: 30_000,
@@ -51,25 +50,49 @@ window.TrainTrack = (() => {
     POLL_INTERVAL_MS: 30_000,
 
     /* localStorage keys */
-    LS_LINE:     'tt_line',
-    LS_FROM:     'tt_from',
-    LS_TO:       'tt_to',
-    LS_FAVS:     'tt_favs',
-    LS_CLOCK24:  'tt_clock24',
-    LS_REFRESH:  'tt_autorefresh',
+    LS_LINE:       'tt_line',
+    LS_FROM:       'tt_from',
+    LS_TO:         'tt_to',
+    LS_FAVS:       'tt_favs',
+    LS_CLOCK24:    'tt_clock24',
+    LS_REFRESH:    'tt_autorefresh',
+    LS_DISMISSED:  'tt_dismissed_disruptions',
 
     /* IndexedDB */
     IDB_NAME:    'traintrack-db',
     IDB_VERSION: 2,
     IDB_STORE:   'schedule-cache',
 
-    /* Lines */
+    /* Suburban Lines */
     LINES: ['western', 'central', 'harbour'],
     LINE_COLORS: {
       western: '#3b82f6',
       central: '#ef4444',
       harbour: '#8b5cf6',
     },
+
+    /* Metro Lines (operational 2026) */
+    METRO_LINES: [
+      { id: 'metro_aqua',   name: 'Metro Line 1 (Aqua)',   color: '#06b6d4' },
+      { id: 'metro_red',    name: 'Metro Line 2A (Red)',   color: '#ef4444' },
+      { id: 'metro_yellow', name: 'Metro Line 7 (Yellow)', color: '#eab308' },
+    ],
+
+    /* Peak hour windows — 24-hour format */
+    PEAK_HOURS: Object.freeze({
+      morning: { start: 7,  end: 11 },
+      evening: { start: 17, end: 22 },
+    }),
+
+    /* Mumbai emergency helpline numbers */
+    EMERGENCY_NUMBERS: Object.freeze({
+      railway_helpline: '18001111392',
+      railway_security: '9004494949',
+      rpf_emergency:    '182',
+      police:           '100',
+      ambulance:        '108',
+      women_helpline:   '1091',
+    }),
   });
 
   /* =========================================================================
@@ -787,7 +810,162 @@ window.TrainTrack = (() => {
   })();
 
   /* =========================================================================
-     7. APP — bootstrap & event orchestration
+     7. CROWD HEURISTIC — compute crowd level from schedule + time context
+     =========================================================================
+     Algorithm (score 0-100):
+       Base: +40 if current hour is within any peak window
+       Direction: +20 if train runs *toward* terminus at morning peak,
+                  or *away from* terminus at evening peak
+       Type modifier: Fast +20, Slow +10, Ladies -30, AC -20
+       Thresholds: PEAK ≥70, HIGH ≥50, MEDIUM ≥25, LOW <25
+  ========================================================================= */
+  const CrowdHeuristic = (() => {
+
+    const CROWD_LEVELS = Object.freeze({
+      PEAK:   { level: 'PEAK',   score: 70, color: '#ef4444', emoji: '🔴', label: 'Very Crowded',  showWarning: true  },
+      HIGH:   { level: 'HIGH',   score: 50, color: '#f59e0b', emoji: '🟠', label: 'Crowded',       showWarning: true  },
+      MEDIUM: { level: 'MEDIUM', score: 25, color: '#eab308', emoji: '🟡', label: 'Moderate',      showWarning: false },
+      LOW:    { level: 'LOW',    score:  0, color: '#4edea3', emoji: '🟢', label: 'Comfortable',   showWarning: false },
+    });
+
+    /* Terminus station codes for all lines */
+    const TERMINUS_CODES = new Set(['CCG', 'CSMT', 'PNVL']);
+
+    /* ── 7a. Peak hour detection ── */
+    function isPeakHour(time = new Date()) {
+      const h = time.getHours();
+      const { morning, evening } = Config.PEAK_HOURS;
+      return (h >= morning.start && h < morning.end) ||
+             (h >= evening.start && h < evening.end);
+    }
+
+    function _isMorningPeak(h) {
+      const { morning } = Config.PEAK_HOURS;
+      return h >= morning.start && h < morning.end;
+    }
+    function _isEveningPeak(h) {
+      const { evening } = Config.PEAK_HOURS;
+      return h >= evening.start && h < evening.end;
+    }
+
+    /* ── 7b. Core scoring engine ── */
+    function getCrowdLevel(train, time = new Date()) {
+      let score = 0;
+      const h = time.getHours();
+
+      /* Peak base */
+      if (isPeakHour(time)) score += 40;
+
+      /* Direction bonus (crowd flows toward termini in morning, away in evening) */
+      const towardTerminus = TERMINUS_CODES.has(train.to);
+      const fromTerminus   = TERMINUS_CODES.has(train.from);
+
+      if (_isMorningPeak(h) && towardTerminus) score += 20;  /* towards CCG/CSMT */
+      if (_isEveningPeak(h) && fromTerminus)   score += 20;  /* away from CCG/CSMT */
+
+      /* Train type modifier */
+      const type = (train.type ?? '').toLowerCase();
+      if (type === 'fast')   score += 20;
+      if (type === 'slow')   score += 10;
+      if (type === 'ladies') score -= 30;
+      if (type === 'ac')     score -= 20;
+
+      /* Clamp to [0,100] */
+      score = Math.max(0, Math.min(100, score));
+
+      /* Map to level */
+      let level;
+      if      (score >= CROWD_LEVELS.PEAK.score)   level = CROWD_LEVELS.PEAK;
+      else if (score >= CROWD_LEVELS.HIGH.score)   level = CROWD_LEVELS.HIGH;
+      else if (score >= CROWD_LEVELS.MEDIUM.score) level = CROWD_LEVELS.MEDIUM;
+      else                                          level = CROWD_LEVELS.LOW;
+
+      return { ...level, score };
+    }
+
+    /* ── 7c. UI-ready indicator (alias of getCrowdLevel) ── */
+    function getCrowdIndicator(train, time = new Date()) {
+      return getCrowdLevel(train, time);
+    }
+
+    /* ── 7d. Public constant accessor ── */
+    function getLevels() { return CROWD_LEVELS; }
+
+    return { getCrowdLevel, getCrowdIndicator, isPeakHour, getLevels };
+  })();
+
+  /* =========================================================================
+     8. DISRUPTIONS — fetch, cache and dismiss disruption/mega-block alerts
+     =========================================================================
+     Data source: ./disruptions.json (static local file, SW-cached)
+     Active disruption = status:'active' AND within [start_time, end_time]
+     Dismissed disruptions persist in localStorage (LS_DISMISSED key)
+  ========================================================================= */
+  const Disruptions = (() => {
+    let _disruptions = [];
+
+    /* ── 8a. Fetch disruptions.json ── */
+    async function fetch() {
+      try {
+        const res = await window.fetch(Config.DISRUPTIONS_URL, {
+          signal: AbortSignal.timeout(5000),
+        });
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        const data = await res.json();
+        _disruptions = data.disruptions ?? [];
+        console.log(`[Disruptions] Loaded ${_disruptions.length} records`);
+      } catch (e) {
+        console.warn('[Disruptions] Could not load disruptions.json:', e.message);
+        _disruptions = [];
+      }
+    }
+
+    /* ── 8b. Get currently active disruptions (time-window aware) ── */
+    function getActive() {
+      const now = Date.now();
+      return _disruptions.filter(d => {
+        if (d.status !== 'active') return false;
+        const start = d.start_time ? new Date(d.start_time).getTime() : 0;
+        const end   = d.end_time   ? new Date(d.end_time).getTime()   : Infinity;
+        return now >= start && now <= end;
+      });
+    }
+
+    /* ── 8c. Get all disruptions for a specific line ── */
+    function getByLine(line) {
+      return _disruptions.filter(d => d.line === line);
+    }
+
+    /* ── 8d. Dismissal management ── */
+    function _getDismissed() {
+      try { return JSON.parse(localStorage.getItem(Config.LS_DISMISSED)) ?? []; }
+      catch { return []; }
+    }
+
+    function isDismissed(id) {
+      return _getDismissed().includes(id);
+    }
+
+    function dismiss(id) {
+      try {
+        const list = _getDismissed();
+        if (!list.includes(id)) list.push(id);
+        localStorage.setItem(Config.LS_DISMISSED, JSON.stringify(list));
+      } catch (e) {
+        console.warn('[Disruptions] Could not save dismissal:', e);
+      }
+    }
+
+    /* ── 8e. Get mega-block schedule for a line ── */
+    function getMegaBlockInfo(scheduleData, line) {
+      return scheduleData?.mega_block_schedule?.[line] ?? null;
+    }
+
+    return { fetch, getActive, getByLine, isDismissed, dismiss, getMegaBlockInfo };
+  })();
+
+  /* =========================================================================
+     9. APP — bootstrap & event orchestration
      ========================================================================= */
   const App = (() => {
     let _scheduleData = null;
@@ -1141,7 +1319,7 @@ window.TrainTrack = (() => {
   /* ─────────────────────────────────────────────────────────────────────────
      EXPORT public API
   ───────────────────────────────────────────────────────────────────────── */
-  return { Config, Store, API, Search, UI, Scheduler, App };
+  return { Config, Store, API, Search, UI, Scheduler, CrowdHeuristic, Disruptions, App };
 
 })(); /* end TrainTrack IIFE */
 
