@@ -244,7 +244,7 @@ svg { display: block; flex-shrink: 0; }
 }
 
 /* ── 8. HERO SEARCH CARD ────────────────────────────────────────────────── */
-.hero-section { /* wrapper — no extra styles needed */ }
+.hero-section { display: block; }
 
 .search-card {
   padding: var(--sp-4);
@@ -752,3 +752,136 @@ svg { display: block; flex-shrink: 0; }
     transition-duration: .01ms !important;
   }
 }
+
+/* ────────────────────────────────────────────────────────────────────────────
+   18. SOS EMERGENCY BUTTON
+   Hardware-accelerated, fixed within header flow — never overlaps content
+   ──────────────────────────────────────────────────────────────────────── */
+.sos-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 5px 10px;
+  background: linear-gradient(135deg, #c0392b 0%, #e74c3c 100%);
+  color: #fff;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: .5px;
+  border-radius: var(--r-full);
+  border: 1px solid rgba(255,255,255,.15);
+  cursor: pointer;
+  transform: translateZ(0);
+  transition: transform var(--dur-fast) var(--ease),
+              box-shadow var(--dur-fast) var(--ease),
+              opacity var(--dur-fast) var(--ease);
+  box-shadow: 0 2px 8px rgba(192,57,43,.5);
+  will-change: transform;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+.sos-button:hover {
+  transform: scale(1.06) translateZ(0);
+  box-shadow: 0 4px 16px rgba(231,76,60,.7);
+}
+.sos-button:active {
+  transform: scale(.95) translateZ(0);
+  opacity: .85;
+}
+
+/* Pulse ring on SOS to draw attention */
+@keyframes sos-pulse {
+  0%   { box-shadow: 0 0 0 0 rgba(231,76,60,.6); }
+  70%  { box-shadow: 0 0 0 8px rgba(231,76,60,0); }
+  100% { box-shadow: 0 0 0 0 rgba(231,76,60,0); }
+}
+.sos-button { animation: sos-pulse 2.5s ease-out infinite; }
+@media (prefers-reduced-motion: reduce) {
+  .sos-button { animation: none; }
+}
+
+/* ────────────────────────────────────────────────────────────────────────────
+   19. MEGA-BLOCK / DISRUPTION BANNER
+   Sticky below header — slides down from -100% on show, GPU-composited
+   ──────────────────────────────────────────────────────────────────────── */
+.mega-block-banner {
+  position: sticky;
+  top: 0;
+  z-index: 85;
+  background: linear-gradient(90deg, #7f1d1d 0%, #991b1b 50%, #7f1d1d 100%);
+  border-bottom: 1px solid rgba(239,68,68,.4);
+  padding: var(--sp-3) var(--sp-4);
+  transform: translateZ(0);
+  will-change: transform;
+  animation: banner-in var(--dur-slow) var(--ease) both;
+}
+
+@keyframes banner-in {
+  from { transform: translateY(-100%) translateZ(0); opacity: 0; }
+  to   { transform: translateY(0)     translateZ(0); opacity: 1; }
+}
+
+.banner-content {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-3);
+  max-width: var(--max-w);
+  margin: 0 auto;
+}
+
+.banner-icon {
+  font-size: 20px;
+  flex-shrink: 0;
+  line-height: 1;
+}
+
+.banner-text {
+  flex: 1;
+  min-width: 0;
+}
+
+.banner-title {
+  font-size: 13px;
+  font-weight: 700;
+  color: #fca5a5;
+  display: block;
+  line-height: 1.3;
+}
+
+.banner-message {
+  font-size: 12px;
+  color: rgba(255,255,255,.85);
+  margin-top: 2px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+@media (max-width: 360px) {
+  .banner-message { font-size: 11px; }
+}
+
+.banner-dismiss {
+  width: 28px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background: rgba(255,255,255,.12);
+  color: rgba(255,255,255,.8);
+  font-size: 18px;
+  font-weight: 400;
+  flex-shrink: 0;
+  transition: background var(--dur-fast) var(--ease),
+              transform  var(--dur-fast) var(--ease);
+  transform: translateZ(0);
+}
+.banner-dismiss:hover  { background: rgba(255,255,255,.22); }
+.banner-dismiss:active { transform: scale(.9) translateZ(0); }
+
+/* ── HIGH-SEVERITY banner variant ── */
+.mega-block-banner[data-severity="high"] {
+  background: linear-gradient(90deg, #92400e 0%, #b45309 50%, #92400e 100%);
+  border-color: rgba(245,158,11,.4);
+}
+.mega-block-banner[data-severity="high"] .banner-title { color: #fde68a; }

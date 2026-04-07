@@ -9,7 +9,7 @@
  *   Everything else  → Network-first with stale fallback
  */
 
-const CACHE_VERSION = 'v2';
+const CACHE_VERSION = 'v3';
 const STATIC_CACHE  = `traintrack-static-${CACHE_VERSION}`;
 const DATA_CACHE    = `traintrack-data-${CACHE_VERSION}`;
 const ALL_CACHES    = [STATIC_CACHE, DATA_CACHE];
@@ -22,6 +22,7 @@ const SHELL_ASSETS = [
   '/app.js',
   '/manifest.json',
   '/schedules.json',
+  '/disruptions.json',
   '/icons/icon-192.png',
   '/icons/icon-512.png',
 ];
