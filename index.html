@@ -188,8 +188,17 @@
           </div>
         </div>
 
-        <!-- Train list — populated by app.js -->
         <div id="train-board" role="tabpanel" aria-labelledby="tab-western" aria-live="polite" aria-atomic="false">
+
+          <div class="leave-by-card" id="leave-by-card" style="display: none;">
+            <div class="leave-by-icon">🏃</div>
+            <div class="leave-by-content">
+              <div class="leave-by-label">Leave by</div>
+              <div class="leave-by-time" id="leave-by-time">--:--</div>
+              <div class="leave-by-subtitle" id="leave-by-subtitle">calculating...</div>
+            </div>
+            <button class="leave-by-settings" id="walk-time-settings">⚙️</button>
+          </div>
 
           <!-- Loading skeleton (shown while fetching) -->
           <div id="board-loading" class="loading-state" aria-label="Loading trains…">
@@ -323,6 +332,9 @@
             <span class="train-eta-label">ETA</span>
             <span class="train-eta-value"></span>
           </div>
+        </div>
+        <div class="missed-train-message" style="display: none;">
+          😔 Missed it? Next train in <span class="next-train-time">5 mins</span>
         </div>
       </div>
     </li>
