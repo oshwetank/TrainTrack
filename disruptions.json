@@ -1,0 +1,109 @@
+{
+  "meta": {
+    "version": "1.3.0",
+    "generated": "2026-04-07",
+    "description": "Live disruptions and mega-block schedule for Mumbai Suburban Railways"
+  },
+  "disruptions": [
+    {
+      "id": "MEGA-WR-2026-04",
+      "type": "mega_block",
+      "line": "western",
+      "severity": "high",
+      "status": "scheduled",
+      "title": "Western Line Mega Block",
+      "message": "Mega block on Western Line between Borivali and Virar every Sunday 00:00–05:00. Plan alternate travel.",
+      "affected_stations": ["BVI","DIC","MIRA","BYR","NIG","BSR","NSP","VR"],
+      "start_time": "2026-04-13T00:00:00+05:30",
+      "end_time": "2026-04-13T05:00:00+05:30",
+      "recurrence": "weekly_sunday",
+      "alternate_mode": "BEST Bus Route 225 / 226",
+      "source": "WR Official",
+      "dismissed_by": []
+    },
+    {
+      "id": "MEGA-CR-2026-04",
+      "type": "mega_block",
+      "line": "central",
+      "severity": "high",
+      "status": "scheduled",
+      "title": "Central Line Mega Block",
+      "message": "Mega block on Central Line between Thane and Kalyan every Sunday 00:00–06:00. Limited services via Harbour Line.",
+      "affected_stations": ["TNA","KLVA","MBQ","DIVA","DI","THK","KYN"],
+      "start_time": "2026-04-13T00:00:00+05:30",
+      "end_time": "2026-04-13T06:00:00+05:30",
+      "recurrence": "weekly_sunday",
+      "alternate_mode": "Harbour Line via Mankhurd",
+      "source": "CR Official",
+      "dismissed_by": []
+    },
+    {
+      "id": "SIG-FAIL-HR-2026-04-07",
+      "type": "signal_failure",
+      "line": "harbour",
+      "severity": "medium",
+      "status": "active",
+      "title": "Signal Failure – Harbour Line",
+      "message": "Signal failure near Mankhurd causing 10–15 min delays on Harbour Line. Trains running behind schedule.",
+      "affected_stations": ["MNKD","VSH","SNPD"],
+      "start_time": "2026-04-07T13:00:00+05:30",
+      "end_time": "2026-04-07T16:00:00+05:30",
+      "recurrence": null,
+      "alternate_mode": null,
+      "source": "CR Control Room",
+      "dismissed_by": []
+    },
+    {
+      "id": "TRACK-WR-VIRAR-2026-04",
+      "type": "track_work",
+      "line": "western",
+      "severity": "low",
+      "status": "scheduled",
+      "title": "Track Maintenance – Virar to Dahanu",
+      "message": "Track maintenance work between Virar and Dahanu Road on weekday nights 01:00–04:00. No trains running.",
+      "affected_stations": ["VR","VTN","SAH","KLV","PLG","UOI","BOR","VGN","DRD"],
+      "start_time": "2026-04-08T01:00:00+05:30",
+      "end_time": "2026-04-08T04:00:00+05:30",
+      "recurrence": "weekdays",
+      "alternate_mode": "ST Bus services from Virar ST Stand",
+      "source": "WR Engineering Dept",
+      "dismissed_by": []
+    },
+    {
+      "id": "CROWD-WR-MORNING-2026-04-07",
+      "type": "overcrowding_alert",
+      "line": "western",
+      "severity": "low",
+      "status": "active",
+      "title": "Heavy Crowding – Morning Rush",
+      "message": "Extreme crowding on Western Line fast trains 07:30–09:30. Consider taking slow trains or travelling earlier.",
+      "affected_stations": ["CCG","BCL","DDR","ADH","BVI"],
+      "start_time": "2026-04-07T07:30:00+05:30",
+      "end_time": "2026-04-07T09:30:00+05:30",
+      "recurrence": "weekday_mornings",
+      "alternate_mode": null,
+      "source": "TrainTrack Heuristic",
+      "dismissed_by": []
+    }
+  ],
+  "mega_block_schedule": {
+    "western": {
+      "day": "Sunday",
+      "window": "00:00–05:00",
+      "affected_section": "Borivali–Virar",
+      "note": "AC trains may have separate schedule"
+    },
+    "central": {
+      "day": "Sunday",
+      "window": "00:00–06:00",
+      "affected_section": "Thane–Kalyan",
+      "note": "Trans-Harbour trains unaffected"
+    },
+    "harbour": {
+      "day": "Tuesday",
+      "window": "01:00–04:00",
+      "affected_section": "Mankhurd–Panvel",
+      "note": "CSMT–Mankhurd trains unaffected"
+    }
+  }
+}
