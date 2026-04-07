@@ -545,14 +545,14 @@ window.TrainTrack = (() => {
     function _buildCard(train, departure, line, liveOverride = null) {
       const tpl = els.trainCardTpl.content.cloneNode(true);
       const li = tpl.querySelector('.train-card');
-      li.dataset.trainNumber = train.number;
+      li.dataset.trainNumber = train.trainNo || train.number;
       li.dataset.line = line;
 
       /* LEFT COLOUR BAR handled by CSS via data-line */
 
       /* Content slots */
       tpl.querySelector('.train-name').textContent = train.name;
-      tpl.querySelector('.train-number').textContent = `#${train.number} · ${train.type.toUpperCase()}`;
+      tpl.querySelector('.train-number').textContent = `#${train.trainNo || train.number} · ${train.type.toUpperCase()}`;
 
       const fromStation = train.from;
       const toStation = train.to;
@@ -599,11 +599,38 @@ window.TrainTrack = (() => {
 
       if (!filtered.length) { showEmpty(); return; }
 
-      /* For each train, grab next 1 departure */
+      /* Set up cards based on requested station */
       const cards = [];
       filtered.forEach(train => {
-        const next = _getNextDepartures(train.departures, 1);
-        if (next.length) cards.push({ train, departure: next[0] });
+        const stopCode = from || train.from;
+        let departure;
+        
+        // Handle new schema: departures is an array of all stops.
+        if (train.departures && train.departures.length > 0 && train.departures[0].station) {
+          departure = train.departures.find(d => d.station === stopCode);
+        } else {
+          // Fallback legacy schema
+          const nextDeps = _getNextDepartures(train.departures, 1);
+          departure = nextDeps[0];
+        }
+
+        if (departure) {
+          /* Enforce chronological display for the station */
+          const [h, m] = departure.time.split(':').map(Number);
+          const totalMins = h * 60 + m;
+          const now = new Date();
+          const nowMins = now.getHours() * 60 + now.getMinutes();
+          let effective = totalMins;
+          if (totalMins < nowMins) effective += 1440; // departed today -> moved to tomorrow
+          
+          /* Copy and extend the departure so we don't mutate DB */
+          const dExtended = { ...departure, effectiveMins: effective };
+          
+          /* Fast forward ETA view window (don't show trains 12 hours from now) */
+          if (effective - nowMins <= 120 && effective - nowMins >= 0) {
+            cards.push({ train, departure: dExtended });
+          }
+        }
       });
 
       /* Sort by effective departure time (soonest first) */
