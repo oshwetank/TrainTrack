@@ -50,10 +50,42 @@
           <span class="badge-dot" aria-hidden="true"></span>
           <span class="badge-text">OFFLINE</span>
         </span>
+        <!-- SOS Emergency Button -->
+        <button
+          class="sos-button"
+          id="sosButton"
+          type="button"
+          aria-label="Emergency contacts and helpline numbers"
+          title="Emergency Contacts"
+        >🆘 SOS</button>
         <!-- Live clock -->
         <time id="live-clock" class="live-clock" aria-label="Current time" datetime=""></time>
       </div>
     </header>
+
+    <!-- ── DISRUPTION BANNER (shown by JS when active disruptions exist) ── -->
+    <div
+      class="mega-block-banner"
+      id="megaBlockBanner"
+      role="alert"
+      aria-live="assertive"
+      aria-atomic="true"
+      style="display:none;"
+    >
+      <div class="banner-content">
+        <span class="banner-icon" aria-hidden="true">⚠️</span>
+        <div class="banner-text">
+          <strong class="banner-title">Service Disruption</strong>
+          <p class="banner-message" id="bannerMessage"></p>
+        </div>
+        <button
+          class="banner-dismiss"
+          id="dismissBanner"
+          type="button"
+          aria-label="Dismiss disruption alert"
+        >×</button>
+      </div>
+    </div>
 
     <!-- ── MAIN CONTENT AREA ─────────────────────────────────────── -->
     <main id="main-content" class="main-scroll" role="main">
@@ -258,7 +290,7 @@
             <span class="toggle-thumb"></span>
           </button>
         </div>
-        <p class="setting-version">TrainTrack v1.0.0 · MIT License</p>
+        <p class="setting-version">TrainTrack v1.3.0 · MIT License</p>
       </div>
     </aside>
 

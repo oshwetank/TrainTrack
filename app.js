@@ -1300,17 +1300,74 @@ window.TrainTrack = (() => {
          Only when online; respects autorefresh preference               */
       const prefs = Store.getPrefs();
       if (prefs.autoref !== false) {
-        /* First live refresh after schedules are shown */
         setTimeout(() => _hydrate(), 2000);
-        /* Then every 30 seconds */
         Scheduler.start(_hydrate);
       }
 
-      /* STEP 5: Register Background Sync so SW refreshes schedules on next
-         network connection (even if the app is closed)                  */
+      /* STEP 5: Register Background Sync */
       if (navigator.onLine) _registerBgSync();
 
+      /* STEP 6: SOS emergency button ─────────────────────────────────────
+         Pure native dialog — zero dependencies, works offline            */
+      const sosBtn = document.getElementById('sosButton');
+      if (sosBtn) {
+        sosBtn.addEventListener('click', () => {
+          const nums = Config.EMERGENCY_NUMBERS;
+          const lines = [
+            `1. Railway Helpline : ${nums.railway_helpline}`,
+            `2. Railway Security : ${nums.railway_security}`,
+            `3. RPF Emergency    : ${nums.rpf_emergency}`,
+            `4. Police           : ${nums.police}`,
+            `5. Ambulance        : ${nums.ambulance}`,
+            `6. Women Helpline   : ${nums.women_helpline}`,
+          ];
+          const message = `🚨 TrainTrack Emergency Contacts\n\n${lines.join('\n')}\n\nTap OK then enter a number (1–6) to dial.`;
+          if (confirm(message)) {
+            const choice = prompt('Enter number to dial (1–6):');
+            const allNums = Object.values(nums);
+            const idx = parseInt(choice, 10) - 1;
+            if (!isNaN(idx) && allNums[idx]) {
+              window.location.href = `tel:${allNums[idx]}`;
+            }
+          }
+        });
+      }
+
+      /* STEP 7: Disruption banner ─────────────────────────────────────────
+         Fetch disruptions.json, show banner for first non-dismissed active */
+      _initDisruptionBanner();
+
       console.log(`[TrainTrack] v${Config.VERSION} booted ✓`);
+    }
+
+    /* ── Disruption banner control ── */
+    function _showMegaBlockBanner(disruption) {
+      const banner  = document.getElementById('megaBlockBanner');
+      const msgEl   = document.getElementById('bannerMessage');
+      if (!banner || !msgEl) return;
+      msgEl.textContent = disruption.message;
+      banner.dataset.disruptionId = disruption.id;
+      banner.dataset.severity     = disruption.severity ?? 'medium';
+      banner.style.display = 'block';
+    }
+
+    function _initDisruptionBanner() {
+      Disruptions.fetch().then(() => {
+        const active = Disruptions.getActive();
+        const first  = active.find(d => !Disruptions.isDismissed(d.id));
+        if (first) _showMegaBlockBanner(first);
+      });
+
+      const dismissBtn = document.getElementById('dismissBanner');
+      if (dismissBtn) {
+        dismissBtn.addEventListener('click', () => {
+          const banner = document.getElementById('megaBlockBanner');
+          if (!banner) return;
+          const id = banner.dataset.disruptionId;
+          if (id) Disruptions.dismiss(id);
+          banner.style.display = 'none';
+        });
+      }
     }
 
     return { boot };
