@@ -914,3 +914,32 @@ svg { display: block; flex-shrink: 0; }
   color: #fca5a5;
   font-size: 13px;
 }
+
+.delay-badge {
+  background: #ff4444;
+  color: white;
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 12px;
+  font-weight: 600;
+  margin-left: 8px;
+  display: inline-block;
+}
+
+.on-time-badge {
+  background: #00c853;
+  color: white;
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 12px;
+  font-weight: 600;
+  margin-left: 8px;
+  display: inline-block;
+}
+
+.status-container {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+

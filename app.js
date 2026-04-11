@@ -543,6 +543,35 @@ window.TrainTrack = (() => {
       return { cls: 'badge badge-delayed', text: `+${delayMins} min` };
     }
 
+    // Real-time delay integration with RailRadar API
+    async function fetchLiveDelays(trainNumber, dateStr) {
+      const API_URL = 'https://api.railradar.in/v1/trains/status';
+      try {
+        const response = await window.fetch(`${API_URL}?train=${trainNumber}&date=${dateStr}`, {
+          method: 'GET',
+          headers: { 'Accept': 'application/json' }
+        });
+        if (!response.ok) throw new Error(`API returned ${response.status}`);
+        const data = await response.json();
+        if (data.success && data.delay_minutes !== undefined) {
+          return {
+            delayed: data.delay_minutes > 0,
+            delayMinutes: data.delay_minutes,
+            status: data.delay_minutes > 0 ? 'Late' : 'On Time'
+          };
+        }
+        return null;
+      } catch (error) {
+        console.warn('RailRadar API unavailable - showing static schedule', error);
+        return null;
+      }
+    }
+
+    function getTodayDateString() {
+      const today = new Date();
+      return `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
+    }
+
     /* Build a single <li> train card from a train object + optional live override */
     function _buildCard(train, departure, line, liveOverride = null) {
       const tpl = els.trainCardTpl.content.cloneNode(true);
@@ -590,6 +619,19 @@ window.TrainTrack = (() => {
         }
       }
 
+      // Add delay badge asynchronously (Live Delays integration)
+      const tNum = train.trainNo || train.number;
+      fetchLiveDelays(tNum, getTodayDateString()).then(delayInfo => {
+        if (delayInfo) {
+          const badge = document.createElement('span');
+          badge.className = delayInfo.delayed ? 'delay-badge' : 'on-time-badge';
+          badge.textContent = delayInfo.delayed ? `Delayed ${delayInfo.delayMinutes} min` : 'On Time';
+          
+          const sc = li.querySelector('.status-container');
+          if (sc) sc.appendChild(badge);
+        }
+      });
+
       return tpl;
     }
 
@@ -603,14 +645,16 @@ window.TrainTrack = (() => {
     function renderBoard(scheduleData, line, from = null, to = null) {
       const trains = scheduleData.trains?.[line] ?? [];
 
-      /* Filter trains that serve both from and to (in order) */
+      /* Using route[] instead of stops[] to include intermediate stations on Fast trains */
       const filtered = trains.filter(t => {
-        if (from && !t.stops.includes(from)) return false;
-        if (to   && !t.stops.includes(to))   return false;
-        if (from && to) {
-          return t.stops.indexOf(from) < t.stops.indexOf(to);
-        }
-        return true;
+        if (!from && !to) return true;
+        const routeArray = t.route || t.stops;
+        if (from && !to) return routeArray.includes(from);
+        if (!from && to) return routeArray.includes(to);
+        
+        const fromIndex = routeArray.indexOf(from);
+        const toIndex = routeArray.indexOf(to);
+        return fromIndex !== -1 && toIndex !== -1 && fromIndex < toIndex;
       });
 
       if (!filtered.length) { showEmpty(); return; }
