@@ -1,0 +1,298 @@
+/* Home Dashboard Styles */
+.home-container {
+  padding: var(--space-md);
+  padding-bottom: 80px; /* Space for bottom nav */
+  animation: fadeIn var(--transition-base);
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.home-header {
+  margin-bottom: var(--space-lg);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.home-header h1 {
+  font-size: var(--font-size-xl);
+  color: var(--text-primary);
+}
+
+.header-actions {
+  display: flex;
+  gap: var(--space-sm);
+}
+
+.icon-btn {
+  background: none;
+  border: none;
+  font-size: var(--font-size-lg);
+  cursor: pointer;
+  padding: var(--space-xs);
+  color: var(--text-secondary);
+  transition: color var(--transition-fast);
+}
+
+.icon-btn:hover {
+  color: var(--primary);
+}
+
+/* Next Train Card Hero */
+.next-train-card {
+  background: var(--primary);
+  border-radius: var(--radius-lg);
+  padding: var(--space-lg);
+  color: white;
+  box-shadow: var(--shadow-md);
+  margin-bottom: var(--space-xl);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-md);
+  position: relative;
+  overflow: hidden;
+}
+
+/* Subtle background accent for Hero */
+.next-train-card::after {
+  content: '';
+  position: absolute;
+  top: -20%;
+  right: -10%;
+  width: 150px;
+  height: 150px;
+  background: radial-gradient(circle, rgba(255,255,255,0.15) 0%, rgba(255,255,255,0) 70%);
+  border-radius: 50%;
+  pointer-events: none;
+}
+
+.route-info h2 {
+  font-size: var(--font-size-lg);
+  margin-bottom: 4px;
+}
+
+.route-info .train-type {
+  display: inline-block;
+  background: rgba(255,255,255,0.2);
+  padding: 2px 8px;
+  border-radius: var(--radius-full);
+  font-size: var(--font-size-sm);
+  font-weight: 600;
+  text-transform: uppercase;
+}
+
+.departure-info {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+}
+
+.countdown {
+  display: flex;
+  flex-direction: column;
+}
+
+.countdown .time {
+  font-size: 48px;
+  font-weight: 700;
+  line-height: 1;
+}
+
+.countdown .unit {
+  font-size: var(--font-size-sm);
+  font-weight: 600;
+  opacity: 0.9;
+  letter-spacing: 1px;
+}
+
+.platform {
+  background: rgba(0,0,0,0.15);
+  padding: var(--space-xs) var(--space-sm);
+  border-radius: var(--radius-md);
+  font-weight: 600;
+  font-size: var(--font-size-base);
+}
+
+.cta-button {
+  background: var(--surface);
+  color: var(--primary);
+  border: none;
+  padding: var(--space-sm) var(--space-md);
+  border-radius: var(--radius-full);
+  font-weight: 700;
+  cursor: pointer;
+  margin-top: var(--space-sm);
+  transition: transform var(--transition-fast), box-shadow var(--transition-fast);
+}
+
+.cta-button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+}
+
+/* Sections */
+section h3 {
+  font-size: var(--font-size-md);
+  color: var(--text-secondary);
+  margin-bottom: var(--space-md);
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+}
+
+/* Saved Journeys */
+.saved-journeys {
+  margin-bottom: var(--space-xl);
+}
+
+.journey-list {
+  display: flex;
+  gap: var(--space-md);
+  overflow-x: auto;
+  padding-bottom: var(--space-sm);
+  scrollbar-width: none; /* Firefox */
+}
+
+.journey-list::-webkit-scrollbar {
+  display: none; /* Chrome/Safari */
+}
+
+.journey-badge {
+  background: white;
+  border: 1px solid rgba(0,0,0,0.05);
+  padding: var(--space-sm) var(--space-md);
+  border-radius: var(--radius-md);
+  font-weight: 600;
+  box-shadow: var(--shadow-sm);
+  white-space: nowrap;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  gap: var(--space-xs);
+  color: var(--text-primary);
+  cursor: pointer;
+  transition: border-color var(--transition-fast);
+}
+
+.journey-badge:hover {
+  border-color: var(--primary);
+}
+
+.journey-badge .arrow {
+  color: var(--text-tertiary);
+}
+
+/* Next Trains List */
+.train-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-md);
+}
+
+.train-card {
+  background: var(--surface);
+  border-radius: var(--radius-md);
+  padding: var(--space-md);
+  box-shadow: var(--shadow-sm);
+  cursor: pointer;
+  transition: transform var(--transition-fast), box-shadow var(--transition-fast);
+  border-left: 4px solid var(--primary);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-sm);
+}
+
+.train-card:hover {
+  transform: translateX(4px);
+  box-shadow: var(--shadow-md);
+}
+
+.train-header {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+}
+
+.train-name {
+  font-weight: 700;
+  font-size: var(--font-size-md);
+  flex-grow: 1;
+}
+
+.train-route {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+  color: var(--text-secondary);
+  font-size: var(--font-size-base);
+  font-weight: 500;
+}
+
+.train-details {
+  display: flex;
+  gap: var(--space-md);
+  font-size: var(--font-size-sm);
+  color: var(--text-secondary);
+  margin-top: 4px;
+}
+
+.train-details span {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-weight: 600;
+}
+
+.train-details .departure-time {
+  color: var(--text-primary);
+}
+
+/* Bottom Nav */
+.bottom-nav {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: var(--surface);
+  display: flex;
+  justify-content: space-around;
+  padding: var(--space-sm);
+  padding-bottom: calc(var(--space-sm) + env(safe-area-inset-bottom));
+  box-shadow: 0 -2px 10px rgba(0,0,0,0.05);
+  z-index: 100;
+}
+
+.nav-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  background: none;
+  border: none;
+  color: var(--text-tertiary);
+  font-size: var(--font-size-sm);
+  font-weight: 600;
+  cursor: pointer;
+  transition: color var(--transition-fast);
+  padding: var(--space-xs) var(--space-md);
+  border-radius: var(--radius-lg);
+}
+
+.nav-item .icon {
+  font-size: 20px;
+}
+
+.nav-item.active {
+  color: var(--primary);
+}
+
+.nav-item.active .icon {
+  transform: scale(1.1);
+}
+
+.nav-item:hover {
+  background: rgba(0,0,0,0.02);
+}

@@ -9,7 +9,7 @@
  *   Everything else  → Network-first with stale fallback
  */
 
-const CACHE_VERSION = 'v3';
+const CACHE_VERSION = 'traintrack-v1.4.2';
 const STATIC_CACHE  = `traintrack-static-${CACHE_VERSION}`;
 const DATA_CACHE    = `traintrack-data-${CACHE_VERSION}`;
 const ALL_CACHES    = [STATIC_CACHE, DATA_CACHE];
@@ -18,14 +18,30 @@ const ALL_CACHES    = [STATIC_CACHE, DATA_CACHE];
 const SHELL_ASSETS = [
   '/',
   '/index.html',
-  '/styles.css',
-  '/app.js',
   '/manifest.json',
   '/schedules.json',
   '/disruptions.json',
-  '/icons/icon-192.png',
-  '/icons/icon-512.png',
+  
+  // NEW CSS PATHS
+  '/css/styles.css',
+  '/css/design-system.css',
+  '/css/components.css',
+  '/css/home.css',
+  '/css/journey-tracker.css',
+  '/css/legacy.css',
+  
+  // NEW JS PATHS
+  '/js/app.js',
+  '/js/components/trainCard.js',
+  '/js/components/journeyTracker.js',
+  '/js/components/bottomNav.js',
+  '/js/utils/timeUtils.js',
+  '/js/utils/dataUtils.js',
+  
+  // PLUS JAKARTA SANS FONT
+  'https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap'
 ];
+
 
 const RAILRADAR_ORIGIN = 'https://railradar.in';
 

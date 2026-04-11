@@ -1,0 +1,11 @@
+/* Import Design System */
+@import './design-system.css';
+@import './components.css';
+@import './home.css';
+@import './journey-tracker.css';
+
+/* Plus Jakarta Sans Font */
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap');
+
+/* Legacy rules kept below for unrefactored views */
+@import './legacy.css';

@@ -1,9 +1,8 @@
 <!DOCTYPE html>
-<html lang="en" data-theme="dark">
+<html lang="en" data-theme="light">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
-  <meta name="theme-color" content="#f59e0b" />
   <meta name="description" content="TrainTrack — Mumbai Local Train Tracker. Real-time departures, delays and platforms for Western, Central and Harbour lines." />
   <meta name="mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
@@ -13,348 +12,79 @@
   <title>TrainTrack — Mumbai Local</title>
 
   <!-- PWA Manifest -->
-  <link rel="manifest" href="manifest.json" />
+  <link rel="manifest" href="/manifest.json" />
 
-  <!-- Favicon / Apple touch icon -->
-  <link rel="apple-touch-icon" href="icons/icon-192.png" />
-  <link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png" />
+  <!-- Icons -->
+  <link rel="apple-touch-icon" href="/icons/icon-192.png" />
+  <link rel="icon" type="image/png" sizes="192x192" href="/icons/icon-192.png" />
 
-  <!-- Inter Font — optimal subset: latin -->
-  <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <meta name="theme-color" content="#E55934" />
 
-  <link rel="stylesheet" href="styles.css" />
+  <!-- Amber Dawn styles -->
+  <link rel="stylesheet" href="/css/styles.css" />
 </head>
 <body>
-
-  <!-- ═══════════════════════════════════════════════════════════
-       APP SHELL
-  ══════════════════════════════════════════════════════════════ -->
-  <div id="app" class="app-shell" role="application" aria-label="TrainTrack Mumbai Local">
-
-    <!-- ── HEADER ─────────────────────────────────────────────── -->
-    <header class="app-header glass" role="banner">
-      <div class="header-brand">
-        <span class="header-logo" aria-hidden="true">🚆</span>
-        <h1 class="header-title">TrainTrack</h1>
-      </div>
-      <div class="header-meta">
-        <!-- Live indicator badge -->
-        <span id="live-badge" class="badge badge-live" role="status" aria-live="polite" aria-label="Live data active">
-          <span class="badge-dot" aria-hidden="true"></span>
-          <span class="badge-text">LIVE</span>
-        </span>
-        <!-- Offline banner (hidden by default, shown by JS when offline) -->
-        <span id="offline-badge" class="badge badge-offline hidden" role="status" aria-live="assertive" aria-label="Offline — showing cached data">
-          <span class="badge-dot" aria-hidden="true"></span>
-          <span class="badge-text">OFFLINE</span>
-        </span>
-        <!-- SOS Emergency Button -->
-        <button
-          class="sos-button"
-          id="sosButton"
-          type="button"
-          aria-label="Emergency contacts and helpline numbers"
-          title="Emergency Contacts"
-        >🆘 SOS</button>
-        <!-- Live clock -->
-        <time id="live-clock" class="live-clock" aria-label="Current time" datetime=""></time>
+  <!-- NEW HOME STRUCTURE -->
+  <div class="home-container">
+    <header class="home-header">
+      <h1 id="greeting">Good evening, Traveler</h1>
+      <div class="header-actions">
+        <button class="icon-btn" aria-label="Search">🔍</button>
+        <button class="icon-btn" aria-label="Settings">⚙️</button>
       </div>
     </header>
 
-    <!-- ── DISRUPTION BANNER (shown by JS when active disruptions exist) ── -->
-    <div
-      class="mega-block-banner"
-      id="megaBlockBanner"
-      role="alert"
-      aria-live="assertive"
-      aria-atomic="true"
-      style="display:none;"
-    >
-      <div class="banner-content">
-        <span class="banner-icon" aria-hidden="true">⚠️</span>
-        <div class="banner-text">
-          <strong class="banner-title">Service Disruption</strong>
-          <p class="banner-message" id="bannerMessage"></p>
-        </div>
-        <button
-          class="banner-dismiss"
-          id="dismissBanner"
-          type="button"
-          aria-label="Dismiss disruption alert"
-        >×</button>
+    <section class="next-train-card" id="nextTrainCard">
+      <!-- Dynamically populated by JS -->
+    </section>
+
+    <section class="saved-journeys" id="savedJourneys">
+      <h3>Saved Journeys</h3>
+      <div class="journey-list">
+        <!-- Dynamically populated -->
+        <button class="journey-badge">
+           <span>VR → CCG</span>
+           <span class="arrow">→</span>
+        </button>
+        <button class="journey-badge">
+           <span>BVI → ADH</span>
+           <span class="arrow">→</span>
+        </button>
       </div>
-    </div>
+    </section>
 
-    <!-- ── MAIN CONTENT AREA ─────────────────────────────────────── -->
-    <main id="main-content" class="main-scroll" role="main">
+    <section class="next-trains" id="nextTrains">
+      <h3>Next Trains</h3>
+      <div class="train-list" id="trainList">
+        <!-- Dynamically populated -->
+      </div>
+    </section>
 
-      <!-- ── HERO SEARCH CARD ──────────────────────────────────── -->
-      <section class="hero-section" aria-label="Search trains">
-        <div class="search-card glass-card">
-
-          <!-- Line selector tabs -->
-          <div class="line-tabs" role="tablist" aria-label="Railway line">
-            <button id="tab-western" class="line-tab tab-western active" role="tab" aria-selected="true" aria-controls="train-board" data-line="western">
-              Western
-            </button>
-            <button id="tab-central" class="line-tab tab-central" role="tab" aria-selected="false" aria-controls="train-board" data-line="central">
-              Central
-            </button>
-            <button id="tab-harbour" class="line-tab tab-harbour" role="tab" aria-selected="false" aria-controls="train-board" data-line="harbour">
-              Harbour
-            </button>
-          </div>
-
-          <!-- Station inputs -->
-          <div class="station-inputs">
-            <div class="input-group">
-              <label for="from-station" class="input-label">From</label>
-              <div class="input-wrapper">
-                <span class="input-icon" aria-hidden="true">
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/></svg>
-                </span>
-                <input
-                  id="from-station"
-                  type="text"
-                  class="station-input"
-                  placeholder="Departure station…"
-                  autocomplete="off"
-                  autocorrect="off"
-                  spellcheck="false"
-                  aria-label="From station"
-                  aria-autocomplete="list"
-                  aria-controls="autocomplete-list"
-                  data-role="from"
-                />
-              </div>
-            </div>
-
-            <!-- Swap button -->
-            <button id="swap-stations" class="swap-btn" aria-label="Swap from and to stations" title="Swap stations">
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M7 16V4m0 0L3 8m4-4l4 4"/><path d="M17 8v12m0 0l4-4m-4 4l-4-4"/>
-              </svg>
-            </button>
-
-            <div class="input-group">
-              <label for="to-station" class="input-label">To</label>
-              <div class="input-wrapper">
-                <span class="input-icon" aria-hidden="true">
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg>
-                </span>
-                <input
-                  id="to-station"
-                  type="text"
-                  class="station-input"
-                  placeholder="Destination station…"
-                  autocomplete="off"
-                  autocorrect="off"
-                  spellcheck="false"
-                  aria-label="To station"
-                  aria-autocomplete="list"
-                  aria-controls="autocomplete-list"
-                  data-role="to"
-                />
-              </div>
-            </div>
-          </div>
-
-          <!-- Autocomplete dropdown (populated by JS) -->
-          <ul id="autocomplete-list" class="autocomplete-list hidden" role="listbox" aria-label="Station suggestions"></ul>
-
-          <!-- Search button -->
-          <button id="search-trains-btn" class="btn-primary" type="button" aria-label="Search trains between selected stations">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
-            Search Trains
-          </button>
-        </div>
-      </section>
-
-      <!-- ── NEXT TRAINS BOARD ──────────────────────────────────── -->
-      <section aria-label="Next trains" class="board-section">
-        <div class="section-header">
-          <h2 class="section-title">Next Trains</h2>
-          <div class="section-actions">
-            <!-- Last updated timestamp -->
-            <span id="last-updated" class="last-updated" aria-live="polite"></span>
-            <!-- Refresh button -->
-            <button id="refresh-btn" class="icon-btn" aria-label="Refresh train data" title="Refresh">
-              <svg id="refresh-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                <path d="M3 12a9 9 0 109-9 9.75 9.75 0 00-6.74 2.74L3 8"/><path d="M3 3v5h5"/>
-              </svg>
-            </button>
-          </div>
-        </div>
-
-        <div id="train-board" role="tabpanel" aria-labelledby="tab-western" aria-live="polite" aria-atomic="false">
-
-          <div class="leave-by-card" id="leave-by-card" style="display: none;">
-            <div class="leave-by-icon">🏃</div>
-            <div class="leave-by-content">
-              <div class="leave-by-label">Leave by</div>
-              <div class="leave-by-time" id="leave-by-time">--:--</div>
-              <div class="leave-by-subtitle" id="leave-by-subtitle">calculating...</div>
-            </div>
-            <button class="leave-by-settings" id="walk-time-settings">⚙️</button>
-          </div>
-
-          <!-- Loading skeleton (shown while fetching) -->
-          <div id="board-loading" class="loading-state" aria-label="Loading trains…">
-            <div class="skeleton-card"></div>
-            <div class="skeleton-card"></div>
-            <div class="skeleton-card"></div>
-          </div>
-
-          <!-- Train cards inserted here by app.js -->
-          <ul id="train-list" class="train-list hidden" role="list" aria-label="Upcoming trains"></ul>
-
-          <!-- Empty state -->
-          <div id="board-empty" class="empty-state hidden" role="status">
-            <span aria-hidden="true" class="empty-icon">🔍</span>
-            <p class="empty-title">No trains found</p>
-            <p class="empty-sub">Try adjusting your station or line.</p>
-          </div>
-
-          <!-- Error / Offline state -->
-          <div id="board-error" class="error-state hidden" role="alert">
-            <span aria-hidden="true" class="error-icon">📡</span>
-            <p class="error-title">Offline</p>
-            <p class="error-sub">Showing last cached schedule.</p>
-          </div>
-        </div>
-      </section>
-
-      <!-- ── FAVOURITES STRIP ───────────────────────────────────── -->
-      <section id="favourites-section" class="favourites-section" aria-label="Favourite routes" hidden>
-        <div class="section-header">
-          <h2 class="section-title">Favourites</h2>
-          <button id="manage-favs-btn" class="text-btn" aria-label="Manage favourite routes">Manage</button>
-        </div>
-        <ul id="favourites-list" class="favourites-list" role="list"></ul>
-      </section>
-
-    </main>
-
-    <!-- ── BOTTOM NAVIGATION ─────────────────────────────────────── -->
-    <nav class="bottom-nav glass" role="navigation" aria-label="Primary navigation">
-      <button class="nav-item active" id="nav-home" data-view="home" aria-label="Home" aria-current="page">
-        <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-          <path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/>
-        </svg>
-        <span class="nav-label">Home</span>
+    <nav class="bottom-nav">
+      <button class="nav-item active" data-view="home">
+        <span class="icon">🏠</span>
+        <span class="label">Home</span>
       </button>
-      <button class="nav-item" id="nav-search" data-view="search" aria-label="Search trains">
-        <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-          <circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/>
-        </svg>
-        <span class="nav-label">Search</span>
+      <button class="nav-item" data-view="alerts">
+        <span class="icon">🔔</span>
+        <span class="label">Alerts</span>
       </button>
-      <button class="nav-item" id="nav-favourites" data-view="favourites" aria-label="Favourite routes">
-        <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-          <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
-        </svg>
-        <span class="nav-label">Favourites</span>
-      </button>
-      <button class="nav-item" id="nav-settings" data-view="settings" aria-label="Settings">
-        <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-          <circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06A1.65 1.65 0 0015 19.4a1.65 1.65 0 00-1.65 1.5V21a2 2 0 01-4 0v-.09A1.65 1.65 0 008 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.6 15 1.65 1.65 0 003.1 13.35H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.6a1.65 1.65 0 001.35-1.5V3a2 2 0 014 0v.09A1.65 1.65 0 0015 4.6a1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.5 1.35H21a2 2 0 010 4h-.09A1.65 1.65 0 0019.4 15z"/>
-        </svg>
-        <span class="nav-label">Settings</span>
+      <button class="nav-item" data-view="settings">
+        <span class="icon">⚙️</span>
+        <span class="label">Settings</span>
       </button>
     </nav>
+  </div>
 
-    <!-- ── SETTINGS DRAWER ──────────────────────────────────────── -->
-    <aside id="settings-drawer" class="settings-drawer glass" role="dialog" aria-modal="true" aria-label="Settings" hidden>
-      <div class="drawer-header">
-        <h2 class="drawer-title">Settings</h2>
-        <button id="close-settings" class="icon-btn" aria-label="Close settings">✕</button>
-      </div>
-      <div class="drawer-body">
-        <div class="setting-row">
-          <div>
-            <p class="setting-label">Notifications</p>
-            <p class="setting-sub">Get alerts for delays on your routes</p>
-          </div>
-          <button id="notif-toggle" class="toggle-btn" role="switch" aria-checked="false" aria-label="Enable notifications">
-            <span class="toggle-thumb"></span>
-          </button>
-        </div>
-        <div class="setting-row">
-          <div>
-            <p class="setting-label">24-hour clock</p>
-            <p class="setting-sub">Show times in 24h format</p>
-          </div>
-          <button id="clock-format-toggle" class="toggle-btn" role="switch" aria-checked="true" aria-label="Toggle clock format">
-            <span class="toggle-thumb"></span>
-          </button>
-        </div>
-        <div class="setting-row">
-          <div>
-            <p class="setting-label">Auto-refresh</p>
-            <p class="setting-sub">Refresh board every 30 seconds</p>
-          </div>
-          <button id="autorefresh-toggle" class="toggle-btn active" role="switch" aria-checked="true" aria-label="Toggle auto-refresh">
-            <span class="toggle-thumb"></span>
-          </button>
-        </div>
-        <p class="setting-version">TrainTrack v1.3.0 · MIT License</p>
-      </div>
-    </aside>
+  <!-- Journey Tracker View (hidden by default) -->
+  <div class="journey-tracker-container" id="journeyTracker" style="display: none;">
+    <!-- Populated by journeyTracker.js -->
+  </div>
 
-    <!-- Drawer backdrop -->
-    <div id="drawer-backdrop" class="drawer-backdrop hidden" aria-hidden="true"></div>
+  <!-- ES6 MODULE IMPORT -->
+  <script type="module" src="/js/app.js"></script>
 
-  </div><!-- /#app -->
-
-  <!-- Train card template (cloned by JS) -->
-  <template id="train-card-tpl">
-    <li class="train-card" role="listitem">
-      <div class="train-card-line-bar" aria-hidden="true"></div>
-      <div class="train-card-body">
-        <div class="train-card-top">
-          <div>
-            <p class="train-name"></p>
-            <p class="train-number"></p>
-          </div>
-          <div class="status-container">
-             <span class="train-status-badge"></span>
-          </div>
-        </div>
-        <div class="train-card-middle">
-          <span class="train-route"></span>
-        </div>
-        <div class="train-card-bottom">
-          <div class="train-time-group">
-            <time class="train-depart-time"></time>
-            <span class="train-platform"></span>
-          </div>
-          <div class="train-eta-group">
-            <span class="train-eta-label">ETA</span>
-            <span class="train-eta-value"></span>
-          </div>
-        </div>
-        <div class="missed-train-message" style="display: none;">
-          😔 Missed it? Next train in <span class="next-train-time">5 mins</span>
-        </div>
-      </div>
-    </li>
-  </template>
-
-  <!-- Favourite route template -->
-  <template id="fav-route-tpl">
-    <li class="fav-route-item" role="listitem">
-      <button class="fav-route-btn" type="button">
-        <span class="fav-from"></span>
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
-        <span class="fav-to"></span>
-      </button>
-      <button class="fav-remove-btn" aria-label="Remove favourite">✕</button>
-    </li>
-  </template>
-
-  <!-- Service Worker registration -->
+  <!-- Service Worker Registration -->
   <script>
     if ('serviceWorker' in navigator) {
       window.addEventListener('load', () => {
@@ -364,7 +94,5 @@
       });
     }
   </script>
-
-  <script src="app.js" type="module"></script>
 </body>
 </html>
