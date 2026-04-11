@@ -34,9 +34,9 @@ TrainTrack was built under the **"Walk in the Garden"** methodology — a phased
 
 ```
 TrainTrack/
-├── index.html          ← App shell (semantic HTML5, <template> elements)
-├── styles.css          ← "Kinetic Nocturne" design system (CSS custom properties)
-├── app.js              ← Single TrainTrack namespace (7 modules, IIFE)
+├── index.html          ← App shell (semantic HTML5)
+├── css/                ← Amber Dawn design system + screen styles
+├── js/                 ← ES modules (`js/app.js` boots `window.TrainTrack`)
 ├── sw.js               ← Service Worker (4 caching strategies)
 ├── manifest.json       ← PWA manifest (maskable icons, shortcuts)
 ├── schedules.json      ← Static seed dataset (Mumbai local timetables)
@@ -47,9 +47,9 @@ TrainTrack/
 
 ---
 
-## 📦 TrainTrack Module Map (`app.js`)
+## 📦 TrainTrack Module Map (`js/app.js`)
 
-The entire application lives inside a single self-executing IIFE to prevent global scope pollution:
+The runtime still exposes a single `window.TrainTrack` namespace (easy to debug in DevTools), but the source is split into ES modules for the Amber Dawn UI workstream:
 
 ```js
 window.TrainTrack = (() => { ... })();
@@ -69,36 +69,17 @@ Fetch wrapper implementing **Stale-While-Revalidate**:
 2. If stale: return cached data instantly, kick off background revalidation
 3. If no cache: `await` the network, then populate the cache
 
-RailRadar endpoints use `Promise.allSettled` batch requests with a shared `AbortController` timeout (8 s), so a single slow train never blocks the whole board.
+RailRadar batch hydration uses `Promise.allSettled` with **per-fetch** `AbortSignal.timeout(8000)` so one slow train cannot abort the rest of the batch.
 
 ### `TrainTrack.Search`
-O(n) linear scan across ≤80 stations. Prefix-matches on both `name` and `code` fields, limited to 8 results, debounced at 120 ms. No trie needed at this data scale.
-
-### `TrainTrack.UI`
-**RAF Render Queue** — all DOM mutations are pushed to a queue and flushed in a single `requestAnimationFrame` callback:
-
-```js
-function enqueue(fn) {
-  _renderQueue.push(fn);
-  if (!_rafId) _rafId = requestAnimationFrame(_flush);
-}
-```
-
-Live hydration (`hydrateBoard`) is a **micro-update** — it only touches `.train-status-badge`, `.train-platform`, and `.train-eta-value` per card. **No `innerHTML`, no list re-render, no reflow.**
-
-### `TrainTrack.Scheduler`
-Wraps `setInterval` with Page Visibility API awareness:
-- Pauses the 30 s interval when the tab is hidden (saves mobile battery)
-- Fires an immediate refresh when the tab regains focus
-- Fully replaceable — call `Scheduler.setEnabled(false)` to respect the user's auto-refresh toggle
+O(n) linear scan across the station lists embedded in `schedules.json`. Prefix-matches on both `name` and `code` fields, limited to 8 results, debounced at 120 ms. No trie needed at this data scale.
 
 ### `TrainTrack.App`
 Bootstrap sequence:
 1. **Instant paint** — serve IndexedDB-cached `schedules.json` if available
 2. **Background fetch** — re-fetch `schedules.json` from the network, update IDB
-3. **Event binding** — wire all interactions (tabs, autocomplete, swap, nav, drawer)
-4. **Live hydration** — after 2 s delay, fetch RailRadar data; repeat every 30 s
-5. **Background Sync** — register `sync-schedules` tag with the Service Worker
+3. **UI wiring** — Amber Dawn home + journey tracker screens (in progress)
+4. **Live hydration** — per-card RailRadar lookups (best-effort; failures are silent)
 
 ---
 
@@ -108,7 +89,7 @@ Four caching strategies mapped to URL patterns:
 
 | URL Pattern | Strategy | Rationale |
 |-------------|----------|-----------|
-| App shell assets (`/`, `index.html`, `styles.css`, `app.js`) | **Cache-first** | Never changes between deployments |
+| App shell assets (`/`, `index.html`, `/css/*`, `/js/*`, `manifest.json`, icons) | **Cache-first** | Never changes between deployments |
 | `schedules.json` | **Stale-while-revalidate** | Serve instantly, update in background |
 | `railradar.in/api/*` | **Network-first + cache fallback** | Fresh data preferred; stale on failure |
 | Everything else | **Network-first + cache fallback** | General safe default |
@@ -119,9 +100,9 @@ Four caching strategies mapped to URL patterns:
 
 ---
 
-## 🎨 Design System: "Kinetic Nocturne"
+## 🎨 Design System: "Amber Dawn" (in progress)
 
-Designed in [Stitch MCP](https://stitch.withgoogle.com), project `4943919853862806818`.
+Early UI exploration was done in Google Stitch; this repo does **not** embed private Stitch project identifiers.
 
 ```css
 /* Core Palette */
@@ -157,6 +138,8 @@ npx serve . --listen 3737
 2. Click **"Add to Home Screen"** (mobile) or the install icon in the address bar (desktop)
 3. TrainTrack runs fully offline after the first load
 
+**iOS note:** Mobile Safari supports PWAs, but **Service Worker update semantics and some background capabilities differ** from Chromium. If something looks “stuck” after a deploy, close all tabs and re-open the site once (or remove/re-add the Home Screen icon) to pick up the latest `sw.js`.
+
 ### Deploy to GitHub Pages
 ```bash
 git push origin main
@@ -178,7 +161,7 @@ All API calls fail **silently** — the UI always renders from the static `sched
 
 To add your own API key:
 ```js
-// app.js → Config
+// js/app.js → TrainTrack.Config
 RAILRADAR_BASE: 'https://your-api-proxy.example.com/api',
 ```
 
@@ -186,13 +169,14 @@ RAILRADAR_BASE: 'https://your-api-proxy.example.com/api',
 
 ## 🗺 Data: `schedules.json`
 
-Static seed dataset with **17 trains** across all 3 lines (76 stations):
+Static seed dataset with **154 trains** across **4** lines (**163** unique station codes in `schedules.json`):
 
-| Line | Trains | Stations |
-|------|--------|---------|
-| Western | 6 (Virar Fast, Borivali Fast, Vasai Fast, Churchgate Slow, Virar AC, Dahisar Fast) | 26 |
-| Central | 6 (Kasara Express, Khopoli Local, Thane Fast, Kalyan Slow, Dombivli Fast, Ghatkopar Fast) | 27 |
-| Harbour | 5 (Panvel Fast, Vashi Shuttle, Belapur Local, Chembur Slow, Nerul Express) | 16 |
+| Line | Trains |
+|------|--------|
+| Western | 53 |
+| Central | 50 |
+| Harbour | 31 |
+| Trans-Harbour | 20 |
 
 Departures include platform numbers and wrap-around midnight correctly.
 

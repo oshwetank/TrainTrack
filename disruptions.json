@@ -97,7 +97,7 @@
       "day": "Sunday",
       "window": "00:00–06:00",
       "affected_section": "Thane–Kalyan",
-      "note": "Trans-Harbour trains unaffected"
+      "note": "Trans-Harbour trains unaffected (TODO: add dedicated Trans-Harbour mega-block entries when CR publishes them)"
     },
     "harbour": {
       "day": "Tuesday",

@@ -2,7 +2,6 @@ import { createTrainCard } from './components/trainCard.js';
 import { initJourneyTracker, updateETA } from './components/journeyTracker.js';
 import { initBottomNav } from './components/bottomNav.js';
 import { getGreeting, calculateCountdown, calculateETA } from './utils/timeUtils.js';
-import { filterTrainsByRoute, getNextDepartures } from './utils/dataUtils.js';
 
 /**
  * TrainTrack — app.js
@@ -33,7 +32,7 @@ if (window.TrainTrack) {
   console.warn('[TrainTrack] app.js loaded more than once — skipping re-init.');
 }
 
-window.TrainTrack = (() => {
+const TrainTrack = (() => {
   'use strict';
 
   /* =========================================================================
@@ -211,7 +210,7 @@ window.TrainTrack = (() => {
     /* ── 3a. Core fetch wrapper — JSON only ── */
     async function _fetch(url, opts = {}) {
       const res = await fetch(url, {
-        signal: opts.signal,
+        signal: opts.signal ?? AbortSignal.timeout(8000),
         headers: { 'Accept': 'application/json', ...(opts.headers ?? {}) },
         ...opts,
       });
@@ -274,13 +273,9 @@ window.TrainTrack = (() => {
 
     /* ── 3f. Batch live hydration for visible train cards ── */
     async function hydrateBatch(trainNumbers) {
-      const ac = new AbortController();
-      const timeout = setTimeout(() => ac.abort(), 8000); /* 8s hard timeout */
-
       const settled = await Promise.allSettled(
-        trainNumbers.map(n => fetchTrainLive(n, ac.signal))
+        trainNumbers.map(n => fetchTrainLive(n, AbortSignal.timeout(8000)))
       );
-      clearTimeout(timeout);
 
       /* Build a map: trainNo → live data (undefined if failed) */
       const map = {};
@@ -400,7 +395,7 @@ window.TrainTrack = (() => {
         });
         list.appendChild(card);
         
-        API.fetchTrainLive(t.trainNo || t.number, new AbortController().signal)
+        API.fetchTrainLive(t.trainNo || t.number, AbortSignal.timeout(8000))
           .then(res => {
             const delayInfo = res.data ? { delayed: res.data.delay > 0, delayMinutes: res.data.delay } : null;
             card.updateStatus(delayInfo);
@@ -439,13 +434,13 @@ window.TrainTrack = (() => {
   return { Config, Store, API, Search, App };
 })();
 
+window.TrainTrack = TrainTrack;
+
 // Initialize
 if (document.readyState === 'loading') {
-  document.addEventListener('DOMContentLoaded', () => TrainTrack.App.boot());
+  document.addEventListener('DOMContentLoaded', () => window.TrainTrack.App.boot());
 } else {
-  TrainTrack.App.boot();
+  window.TrainTrack.App.boot();
 }
 
-// Global exposure
-window.TrainTrack = TrainTrack;
-export const { Config, Store, API, Search } = TrainTrack;
+export const { Config, Store, API, Search, App } = TrainTrack;

@@ -45,6 +45,18 @@ const SHELL_ASSETS = [
 
 const RAILRADAR_ORIGIN = 'https://railradar.in';
 
+/* ── Fetch routing note ────────────────────────────────────────────────────
+   Order matters: the first matching branch wins.
+
+   Why `/schedules.json` is handled *before* the generic `SHELL_ASSETS` match:
+   `SHELL_ASSETS` intentionally includes `'/'` so the HTML shell is always
+   cache-served, but that same predicate would also match `/schedules.json`
+   unless we special-case the dataset URL first.
+
+   RailRadar requests are handled first so live endpoints never accidentally
+   fall into the "static shell" cache-first path.
+   ───────────────────────────────────────────────────────────────────────── */
+
 /* ── Install: pre-cache app shell ────────────────────────────────────────── */
 self.addEventListener('install', (event) => {
   event.waitUntil(
@@ -131,7 +143,7 @@ async function staleWhileRevalidate(request, cacheName) {
   const cached = await cache.match(request);
 
   /* Kick off network request in background regardless */
-  const networkPromise = fetch(request).then(response => {
+  const networkPromise = fetch(request, { signal: AbortSignal.timeout(8000) }).then(response => {
     if (response.ok) cache.put(request, response.clone());
     return response;
   }).catch(() => null);

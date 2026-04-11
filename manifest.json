@@ -7,7 +7,7 @@
   "display": "standalone",
   "orientation": "portrait-primary",
   "background_color": "#12121d",
-  "theme_color": "#f59e0b",
+  "theme_color": "#E55934",
   "lang": "en-IN",
   "categories": ["travel", "utilities", "navigation"],
   "icons": [
@@ -36,21 +36,12 @@
       "purpose": "maskable"
     }
   ],
-  "screenshots": [
-    {
-      "src": "screenshots/home.png",
-      "sizes": "390x844",
-      "type": "image/png",
-      "form_factor": "narrow",
-      "label": "Train Board — upcoming departures"
-    }
-  ],
   "shortcuts": [
     {
-      "name": "Church → Virar",
-      "short_name": "Church→Virar",
+      "name": "Churchgate → Virar",
+      "short_name": "CCG→VR",
       "description": "Quick search: Churchgate to Virar",
-      "url": "/?from=CSTM&to=VR&line=western",
+      "url": "/?from=CCG&to=VR&line=western",
       "icons": [{ "src": "icons/icon-192.png", "sizes": "192x192" }]
     },
     {
