@@ -391,11 +391,15 @@ const TrainTrack = (() => {
               if(_activeTrainPoll) clearInterval(_activeTrainPoll);
            });
            
-           updateETA(calculateETA(t.stops[0], t.stops[t.stops.length-1], t));
+           const route = t.route || t.stops || [];
+           const origin = route[0] ?? t.from ?? '';
+           const destination = route.length ? route[route.length - 1] : (t.to ?? '');
+           updateETA(calculateETA(origin, destination, t));
         });
         list.appendChild(card);
         
-        API.fetchTrainLive(t.trainNo || t.number, AbortSignal.timeout(8000))
+        const trainId = t.trainNo || t.number || t.train_id;
+        API.fetchTrainLive(trainId, AbortSignal.timeout(8000))
           .then(res => {
             const delayInfo = res.data ? { delayed: res.data.delay > 0, delayMinutes: res.data.delay } : null;
             card.updateStatus(delayInfo);
@@ -408,9 +412,12 @@ const TrainTrack = (() => {
       const hero = document.getElementById('nextTrainCard');
       if (hero && upcoming.length > 0) {
         const next = upcoming[0];
+        const route = next.route || next.stops || [];
+        const fromLabel = next.from || route[0] || '';
+        const toLabel = next.to || (route.length ? route[route.length - 1] : '');
         hero.innerHTML = `
           <div class="route-info">
-            <h2>${next.from || next.stops[0]} to ${next.to || next.stops[next.stops.length-1]}</h2>
+            <h2>${fromLabel} to ${toLabel}</h2>
             <span class="train-type">${next.type}</span>
           </div>
           <div class="departure-info">

@@ -5,13 +5,16 @@
 export function createTrainCard(train) {
   const tpl = document.createElement('div');
   tpl.className = 'train-card';
-  tpl.dataset.trainId = train.train_id || train.number || '';
+  const trainNo = train.trainNo || train.number || train.train_id || '';
+  tpl.dataset.trainNumber = trainNo;
+  tpl.dataset.trainId = trainNo;
   
   // Provide safe defaults for potentially missing data
   const tName = train.name || 'Local Train';
   const tType = train.type || 'Local';
-  const tOrigin = train.from || train.origin || (train.route && train.route[0]) || '';
-  const tDest = train.to || train.destination || (train.route && train.route[train.route.length - 1]) || '';
+  const route = train.route || train.stops || [];
+  const tOrigin = train.from || train.origin || route[0] || '';
+  const tDest = train.to || train.destination || (route.length ? route[route.length - 1] : '') || '';
   const tTime = train.departures?.[0]?.time || train.departureTime || '00:00';
   const tPlatform = train.departures?.[0]?.platform || train.platform || '-';
   const stopsLen = train.route ? train.route.length : (train.stops ? train.stops.length : 0);

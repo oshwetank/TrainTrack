@@ -43,11 +43,14 @@ export function formatTime(date) {
 export function calculateETA(currentStation, destinationStation, train) {
   // Calculate ETA based on train schedule and current position
   // Placeholder implementation for real-time calculation
-  if (!train || !train.route) return '--:--';
+  if (!train) return '--:--';
+
+  const route = train.route || train.stops || [];
+  if (!route.length) return '--:--';
   
   // Simple heuristic: 3 mins per station
-  const cIdx = train.route.indexOf(currentStation);
-  const dIdx = train.route.indexOf(destinationStation);
+  const cIdx = route.indexOf(currentStation);
+  const dIdx = route.indexOf(destinationStation);
   
   if(cIdx !== -1 && dIdx !== -1 && dIdx > cIdx) {
     const stopsLeft = dIdx - cIdx;

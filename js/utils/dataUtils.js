@@ -46,12 +46,15 @@ export function getNextDepartures(trains, station, limit = 5) {
 }
 
 export function calculateJourneyProgress(train, currentStation) {
-  if (!train || !train.route) return 0;
+  if (!train) return 0;
+
+  const route = train.route || train.stops || [];
+  if (!route.length) return 0;
   
-  const totalStops = train.route.length;
+  const totalStops = route.length;
   if (totalStops <= 1) return 0;
   
-  const currentIndex = train.route.indexOf(currentStation);
+  const currentIndex = route.indexOf(currentStation);
   if (currentIndex === -1) return 0;
   
   return (currentIndex / (totalStops - 1)) * 100;
