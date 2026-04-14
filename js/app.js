@@ -1,6 +1,7 @@
 import { createTrainCard } from './components/trainCard.js';
 import { initJourneyTracker, updateETA } from './components/journeyTracker.js';
 import { initBottomNav } from './components/bottomNav.js';
+import { initSearch } from './components/searchUI.js';
 import { getGreeting, calculateCountdown, calculateETA } from './utils/timeUtils.js';
 import { getNextDepartures, escapeHTML } from './utils/dataUtils.js';
 
@@ -388,6 +389,7 @@ const TrainTrack = (() => {
 
       initBottomNav();
       _initLineTabs();
+      initSearch(App, Store, Search);
 
       const greetingEl = document.getElementById('greeting');
       if (greetingEl) greetingEl.textContent = getGreeting() + ', Traveler';

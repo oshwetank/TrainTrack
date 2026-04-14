@@ -30,7 +30,7 @@
     <header class="home-header">
       <h1 id="greeting">Good evening, Traveler</h1>
       <div class="header-actions">
-        <button class="icon-btn" type="button" aria-label="Search">Search</button>
+        <button class="icon-btn" type="button" id="btnHeaderSearch" aria-label="Search">Search</button>
         <button class="icon-btn" type="button" aria-label="Settings">Settings</button>
       </div>
     </header>
@@ -82,6 +82,26 @@
         <span class="label">Settings</span>
       </button>
     </nav>
+  </div>
+
+  <!-- Search View (hidden by default) -->
+  <div class="search-container" id="searchContainer" style="display: none;" aria-label="Search stations">
+    <div class="search-header">
+      <button class="icon-btn search-back-btn" id="btnSearchBack" aria-label="Back">Back</button>
+      <div class="search-input-wrapper">
+        <input type="text" id="searchInput" class="search-input" placeholder="Search station (e.g., Andheri)" aria-label="Station name" autocomplete="off" />
+        <button class="clear-search-btn" id="btnClearSearch" aria-label="Clear search" style="display: none;">×</button>
+      </div>
+    </div>
+    <div class="search-results-viewport">
+      <div class="search-results-list" id="searchResults" aria-live="polite">
+        <!-- Populated by searchUI.js -->
+        <div class="search-placeholder">
+          <span class="search-icon" aria-hidden="true">🔍</span>
+          <p>Type to search stations</p>
+        </div>
+      </div>
+    </div>
   </div>
 
   <!-- Journey Tracker View (hidden by default) -->
