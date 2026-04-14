@@ -1,11 +1,12 @@
-﻿import { createTrainCard } from './components/trainCard.js';
+import { createTrainCard } from './components/trainCard.js';
 import { initJourneyTracker, updateETA } from './components/journeyTracker.js';
 import { initBottomNav } from './components/bottomNav.js';
 import { getGreeting, calculateCountdown, calculateETA } from './utils/timeUtils.js';
+import { getNextDepartures } from './utils/dataUtils.js';
 
 /**
  * TrainTrack - app.js
- * Mumbai Local Train Tracker Â· Phase 3: Bloom (PWA Resilience)
+ * Mumbai Local Train Tracker · Phase 3: Bloom (PWA Resilience)
  *
  * Architecture: Single TrainTrack namespace, Vanilla JS (zero framework)
  * Strategy:    Stale-While-Revalidate - render schedules.json instantly,
@@ -37,7 +38,7 @@ const TrainTrack = (() => {
      1. CONFIG
      ========================================================================= */
   const Config = Object.freeze({
-    VERSION: '1.3.0',
+    VERSION: '1.4.2',
 
     /* Static dataset - served from same origin, always available */
     SCHEDULES_URL:    './schedules.json',
@@ -74,7 +75,7 @@ const TrainTrack = (() => {
       western: '#3b82f6',
       central: '#ef4444',
       harbour: '#8b5cf6',
-      trans_harbour: '#10b981',  // Green
+      trans_harbour: '#10b981',
     },
 
     /* Metro Lines (operational 2026) */
@@ -202,7 +203,7 @@ const TrainTrack = (() => {
      3. API - Fetch with Stale-While-Revalidate
      ========================================================================= */
   const API = (() => {
-    /* In-memory response cache: key â†’ { data, ts } */
+    /* In-memory response cache: key → { data, ts } */
     const _cache = new Map();
 
     /* -- 3a. Core fetch wrapper - JSON only -- */
@@ -260,7 +261,9 @@ const TrainTrack = (() => {
 
     /* -- 3e. RailRadar live train status ---------------------------------
        Endpoint: GET /api/trains/{trainNo}/live
-       Returns { trainNo, currentStation, delay, nextStation, platform }  -- */
+       Returns { trainNo, currentStation, delay, nextStation, platform }
+       NOTE: This endpoint may be rate-limited or blocked by CORS in browser.
+       When unavailable, cards show "Live N/A" — schedule data is still shown. -- */
     async function fetchTrainLive(trainNo, signal) {
       const key = `live:train:${trainNo}`;
       return fetchSWR(key, async () => {
@@ -275,7 +278,7 @@ const TrainTrack = (() => {
         trainNumbers.map(n => fetchTrainLive(n, AbortSignal.timeout(8000)))
       );
 
-      /* Build a map: trainNo â†’ live data (undefined if failed) */
+      /* Build a map: trainNo → live data (undefined if failed) */
       const map = {};
       settled.forEach((result, i) => {
         if (result.status === 'fulfilled') {
@@ -330,19 +333,67 @@ const TrainTrack = (() => {
   /* =========================================================================
      5. UI - DOM binding, RAF render queue
      ========================================================================= */
-  
+
   // Initialize Amber Dawn UI
   const App = (() => {
     let _scheduleData = null;
     let _activeTrainPoll = null;
 
+    /* -- 5a. Show loading skeleton in the train list -- */
+    function _setLoading(loading) {
+      const list = document.getElementById('trainList');
+      if (!list) return;
+      if (loading) {
+        list.innerHTML = `
+          <div class="loading-state" aria-live="polite" aria-label="Loading trains">
+            <div class="spinner" aria-hidden="true"></div>
+            <p>Loading trains…</p>
+          </div>`;
+      }
+    }
+
+    /* -- 5b. Wire line-tab buttons; restore active tab from saved prefs -- */
+    function _initLineTabs() {
+      const tabs = document.querySelectorAll('.line-tab');
+      const savedLine = Store.getPrefs().line || 'western';
+
+      /* Restore active state */
+      tabs.forEach(tab => {
+        const isActive = tab.dataset.line === savedLine;
+        tab.classList.toggle('active', isActive);
+        if (isActive) tab.setAttribute('aria-current', 'page');
+        else           tab.removeAttribute('aria-current');
+      });
+
+      /* Click handler */
+      tabs.forEach(tab => {
+        tab.addEventListener('click', () => {
+          const selectedLine = tab.dataset.line;
+          Store.savePrefs({ line: selectedLine });
+
+          tabs.forEach(t => {
+            t.classList.remove('active');
+            t.removeAttribute('aria-current');
+          });
+          tab.classList.add('active');
+          tab.setAttribute('aria-current', 'page');
+
+          if (_scheduleData) _renderHome();
+        });
+      });
+    }
+
     async function boot() {
-      console.log('Booting Amber Dawn UI...');
-      
+      console.log(`[TrainTrack] Booting v${Config.VERSION} (Amber Dawn)…`);
+
       initBottomNav();
-      
+      _initLineTabs();
+
       const greetingEl = document.getElementById('greeting');
-      if(greetingEl) greetingEl.textContent = getGreeting() + ', Traveler';
+      if (greetingEl) greetingEl.textContent = getGreeting() + ', Traveler';
+
+      /* Show skeleton immediately */
+      _setLoading(true);
 
       try {
         const cached = await Store.getCachedSchedules();
@@ -357,66 +408,106 @@ const TrainTrack = (() => {
         if (!cached) _renderHome();
 
       } catch (e) {
-        console.error('Failed to load schedules', e);
+        console.error('[TrainTrack] Failed to load schedules', e);
+        const list = document.getElementById('trainList');
+        if (list) {
+          list.innerHTML = `
+            <div class="empty-state" role="alert">
+              <span class="empty-icon" aria-hidden="true">⚠️</span>
+              <p>Could not load train data.</p>
+              <p class="empty-hint">Check your connection and refresh.</p>
+            </div>`;
+        }
       }
-      
-      setInterval(_updateCountdowns, 60000);
-      
+
+      setInterval(_updateCountdowns, 60_000);
+
       window.addEventListener('online', () => {
-         console.log("Back online!");
-         _renderHome(); // Fetch live data
+        console.log('[TrainTrack] Back online — refreshing…');
+        _renderHome();
       });
     }
-    
+
     function _renderHome() {
-      const line = Store.getPrefs().line || "western";\n      const trains = _scheduleData?.trains?.[line] || [];
-      const list = document.getElementById('trainList');
+      const prefs  = Store.getPrefs();
+      const line   = prefs.line || 'western';
+      const allTrains = _scheduleData?.trains?.[line] || [];
+      const list   = document.getElementById('trainList');
       if (!list) return;
-      
+
+      /* Filter to upcoming trains within 2-hour window from saved from-station */
+      const upcoming = prefs.from
+        ? getNextDepartures(allTrains, prefs.from, 5)
+        : allTrains.slice(0, 5);
+
       list.innerHTML = '';
-      const upcoming = trains.slice(0, 5);
-      
+
+      /* Empty state */
+      if (upcoming.length === 0) {
+        list.innerHTML = `
+          <div class="empty-state" role="status">
+            <span class="empty-icon" aria-hidden="true">🚉</span>
+            <p>No upcoming trains on the <strong>${line.replace('_', '-')}</strong> line.</p>
+            <p class="empty-hint">Try a different line or check back soon.</p>
+          </div>`;
+        const hero = document.getElementById('nextTrainCard');
+        if (hero) hero.innerHTML = '<p class="empty-hero">No trains in the next 2 hours.</p>';
+        return;
+      }
+
+      /* Render train cards */
       upcoming.forEach(t => {
         const card = createTrainCard(t);
+
         card.addEventListener('click', () => {
-           const hc = document.querySelector('.home-container');
-           const jt = document.getElementById('journeyTracker');
-           if (hc) hc.style.display = 'none';
-           if (jt) jt.style.display = 'block';
-           initJourneyTracker(t, () => {
-              if (hc) hc.style.display = 'block';
-              if (jt) jt.style.display = 'none';
-              if(_activeTrainPoll) clearInterval(_activeTrainPoll);
-           });
-           
-           const route = t.route || t.stops || [];
-           const origin = route[0] ?? t.from ?? '';
-           const destination = route.length ? route[route.length - 1] : (t.to ?? '');
-           updateETA(calculateETA(origin, destination, t));
-        });
-        list.appendChild(card);
-        
-        const trainId = t.trainNo || t.number || t.train_id;
-        API.fetchTrainLive(trainId, AbortSignal.timeout(8000))
-          .then(res => {
-            const delayInfo = res.data ? { delayed: res.data.delay > 0, delayMinutes: res.data.delay } : null;
-            card.updateStatus(delayInfo);
-          }).catch(() => {
-             // Mock data if CORS block or offline
-             card.updateStatus(null);
+          const hc = document.querySelector('.home-container');
+          const jt = document.getElementById('journeyTracker');
+          if (hc) hc.style.display = 'none';
+          if (jt) jt.style.display = 'block';
+
+          initJourneyTracker(t, () => {
+            if (hc) hc.style.display = 'block';
+            if (jt) jt.style.display = 'none';
+            if (_activeTrainPoll) clearInterval(_activeTrainPoll);
           });
+
+          const route = t.route || t.stops || [];
+          const origin      = route[0] ?? t.from ?? '';
+          const destination = route.length ? route[route.length - 1] : (t.to ?? '');
+          updateETA(calculateETA(origin, destination, t));
+        });
+
+        list.appendChild(card);
+
+        /* Hydrate with live delay status */
+        const trainId = t.trainNo || t.number || t.train_id;
+        if (trainId) {
+          API.fetchTrainLive(trainId, AbortSignal.timeout(8000))
+            .then(res => {
+              const liveData  = res.data;
+              const delayInfo = liveData
+                ? { delayed: liveData.delay > 0, delayMinutes: liveData.delay }
+                : null;
+              card.updateStatus(delayInfo, false);
+            })
+            .catch(() => {
+              /* RailRadar unavailable (CORS block or offline) - show subtle indicator */
+              card.updateStatus(null, true);
+            });
+        }
       });
-      
+
+      /* Hero "next train" card */
       const hero = document.getElementById('nextTrainCard');
       if (hero && upcoming.length > 0) {
-        const next = upcoming[0];
+        const next  = upcoming[0];
         const route = next.route || next.stops || [];
         const fromLabel = next.from || route[0] || '';
-        const toLabel = next.to || (route.length ? route[route.length - 1] : '');
+        const toLabel   = next.to || (route.length ? route[route.length - 1] : '');
         hero.innerHTML = `
           <div class="route-info">
             <h2>${fromLabel} to ${toLabel}</h2>
-            <span class="train-type">${next.type}</span>
+            <span class="train-type">${next.type || 'Local'}</span>
           </div>
           <div class="departure-info">
             <div class="countdown">
@@ -425,10 +516,15 @@ const TrainTrack = (() => {
             </div>
             <div class="platform">Platform ${next.departures?.[0]?.platform || 1}</div>
           </div>
-          <button class="cta-button" onclick="document.getElementById('journeyTracker').style.display='block'; document.querySelector('.home-container').style.display='none';">Leave Now!</button>`;
+          <button class="cta-button" id="btnHeroLeavNow">Leave Now!</button>`;
+
+        document.getElementById('btnHeroLeavNow')?.addEventListener('click', () => {
+          document.getElementById('journeyTracker').style.display = 'block';
+          document.querySelector('.home-container').style.display = 'none';
+        });
       }
     }
-    
+
     function _updateCountdowns() {
       _renderHome();
     }
@@ -441,7 +537,7 @@ const TrainTrack = (() => {
 
 window.TrainTrack = TrainTrack;
 
-// Initialize
+/* Boot */
 if (document.readyState === 'loading') {
   document.addEventListener('DOMContentLoaded', () => window.TrainTrack.App.boot());
 } else {

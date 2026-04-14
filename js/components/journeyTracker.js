@@ -53,7 +53,29 @@ export function initJourneyTracker(train, backCallback) {
   document.getElementById('btnBackToHome').addEventListener('click', () => {
     if (backCallback) backCallback();
   });
-  
+
+  /* SOS — call RPF emergency line (182) */
+  const sosBtn = container.querySelector('.btn-sos');
+  if (sosBtn) {
+    sosBtn.addEventListener('click', () => {
+      window.location.href = 'tel:182';
+    });
+  }
+
+  /* Notify Family — pre-filled WhatsApp message with train info */
+  const notifyBtn = container.querySelector('.btn-notify');
+  if (notifyBtn) {
+    notifyBtn.addEventListener('click', () => {
+      const route = train.route || train.stops || [];
+      const dest  = train.to || (route.length ? route[route.length - 1] : 'my destination');
+      const name  = train.name || 'a Local Train';
+      const msg   = encodeURIComponent(
+        `I'm on ${name} heading to ${dest}. Tracking my journey via TrainTrack. 🚆`
+      );
+      window.open(`https://wa.me/?text=${msg}`, '_blank', 'noopener');
+    });
+  }
+
   renderJourneyTimeline(train);
 }
 

@@ -32,15 +32,31 @@ export function sortTrainsByDeparture(trains) {
 export function getNextDepartures(trains, station, limit = 5) {
   const now = new Date();
   const currentMins = now.getHours() * 60 + now.getMinutes();
+  const windowEnd   = currentMins + 120; // 2-hour forward window
 
-  // Find trains passing through the station
+  // Find trains passing through the station that depart within the next 2 hours
   let passing = trains.filter(t => {
     const routeArray = t.route || t.stops || [];
-    return routeArray.includes(station);
+    if (!routeArray.includes(station)) return false;
+
+    // Extract origin departure time (HH:MM format)
+    const timeStr = t.departures?.[0]?.time || t.departureTime || t.departure?.time;
+    if (!timeStr) return true; // Include if no time data — don't exclude unknown trains
+
+    const parts = timeStr.split(':');
+    const h = parseInt(parts[0], 10);
+    const m = parseInt(parts[1], 10);
+    if (isNaN(h) || isNaN(m)) return true;
+
+    const depMins = h * 60 + m;
+
+    // Handle midnight crossing (windowEnd > 1440)
+    if (windowEnd > 1440) {
+      return depMins >= currentMins || depMins <= (windowEnd - 1440);
+    }
+    return depMins >= currentMins && depMins <= windowEnd;
   });
 
-  // Since static schedules often don't have accurate station-level departure times unless we calculate them:
-  // For the sake of this prototype, we'll sort based on origin departure time and approximate
   passing = sortTrainsByDeparture(passing);
   return passing.slice(0, limit);
 }

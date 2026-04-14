@@ -40,11 +40,14 @@ export function createTrainCard(train) {
   `;
 
   // Provide an easy method to update status from the outside
-  tpl.updateStatus = (delayInfo) => {
+  // offline=true means live data was attempted but unavailable (CORS/network)
+  tpl.updateStatus = (delayInfo, offline = false) => {
     const sc = tpl.querySelector('.status-container');
     if (!sc) return;
-    
-    if (delayInfo) {
+
+    if (offline) {
+      sc.innerHTML = '<span class="offline-badge" title="Live data unavailable">Live N/A</span>';
+    } else if (delayInfo) {
       sc.innerHTML = `<span class="${delayInfo.delayed ? 'delay-badge' : 'on-time-badge'}">
         ${delayInfo.delayed ? `Delayed ${delayInfo.delayMinutes}min` : 'On Time'}
       </span>`;
