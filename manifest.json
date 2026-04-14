@@ -2,8 +2,8 @@
   "name": "TrainTrack",
   "short_name": "TrainTrack",
   "description": "Mumbai Local Train Tracker — real-time departures, delays and platforms for Western, Central and Harbour lines.",
-  "start_url": "/",
-  "scope": "/",
+  "start_url": "./",
+  "scope": "./",
   "display": "standalone",
   "orientation": "portrait-primary",
   "background_color": "#12121d",
@@ -50,6 +50,15 @@
       "description": "Quick search: CSMT to Thane",
       "url": "/?from=CSMT&to=TNA&line=central",
       "icons": [{ "src": "icons/icon-192.png", "sizes": "192x192" }]
+    }
+  ],
+  "screenshots": [
+    {
+      "src": "icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "form_factor": "narrow",
+      "label": "TrainTrack Home — Mumbai Local Train Tracker"
     }
   ],
   "prefer_related_applications": false,

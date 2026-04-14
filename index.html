@@ -1,30 +1,30 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en" data-theme="light">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
-  <meta name="description" content="TrainTrack â€” Mumbai Local Train Tracker. Real-time departures, delays and platforms for Western, Central and Harbour lines." />
+  <meta name="description" content="TrainTrack — Mumbai Local Train Tracker. Real-time departures, delays and platforms for Western, Central and Harbour lines." />
   <meta name="mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
   <meta name="apple-mobile-web-app-title" content="TrainTrack" />
 
-  <title>TrainTrack â€” Mumbai Local</title>
+  <title>TrainTrack — Mumbai Local</title>
 
-  <!-- PWA Manifest -->
-  <link rel="manifest" href="/manifest.json" />
+  <!-- PWA Manifest (relative path — works at root and on GitHub Pages) -->
+  <link rel="manifest" href="./manifest.json" />
 
   <!-- Icons -->
-  <link rel="apple-touch-icon" href="/icons/icon-192.png" />
-  <link rel="icon" type="image/png" sizes="192x192" href="/icons/icon-192.png" />
+  <link rel="apple-touch-icon" href="./icons/icon-192.png" />
+  <link rel="icon" type="image/png" sizes="192x192" href="./icons/icon-192.png" />
 
   <meta name="theme-color" content="#E55934" />
 
   <!-- Amber Dawn styles -->
-  <link rel="stylesheet" href="/css/styles.css" />
+  <link rel="stylesheet" href="./css/styles.css" />
 </head>
 <body>
-  <!-- NEW HOME STRUCTURE -->
+  <!-- HOME VIEW -->
   <div class="home-container">
     <header class="home-header">
       <h1 id="greeting">Good evening, Traveler</h1>
@@ -34,14 +34,14 @@
       </div>
     </header>
 
-
     <nav class="line-tabs" aria-label="Railway line">
       <button class="line-tab tab-western active" type="button" data-line="western" aria-current="page">Western</button>
       <button class="line-tab tab-central" type="button" data-line="central">Central</button>
       <button class="line-tab tab-harbour" type="button" data-line="harbour">Harbour</button>
       <button class="line-tab tab-trans-harbour" type="button" data-line="trans_harbour">Trans-Harbour</button>
     </nav>
-    <section class="next-train-card" id="nextTrainCard">
+
+    <section class="next-train-card" id="nextTrainCard" aria-label="Next train">
       <!-- Dynamically populated by JS -->
     </section>
 
@@ -51,51 +51,52 @@
         <!-- Dynamically populated -->
         <button class="journey-badge">
            <span>VR → CCG</span>
-           <span class="arrow">â†’</span>
+           <span class="arrow">↩</span>
         </button>
         <button class="journey-badge">
            <span>BVI → ADH</span>
-           <span class="arrow">â†’</span>
+           <span class="arrow">↩</span>
         </button>
       </div>
     </section>
 
     <section class="next-trains" id="nextTrains">
       <h3>Next Trains</h3>
-      <div class="train-list" id="trainList">
+      <div class="train-list" id="trainList" aria-live="polite" aria-label="Upcoming trains">
         <!-- Dynamically populated -->
       </div>
     </section>
 
-    <nav class="bottom-nav">
-      <button class="nav-item active" data-view="home">
-        <span class="icon">ðŸ </span>
+    <nav class="bottom-nav" aria-label="Main navigation">
+      <button class="nav-item active" data-view="home" aria-label="Home">
+        <span class="icon" aria-hidden="true">🏠</span>
         <span class="label">Home</span>
       </button>
-      <button class="nav-item" data-view="alerts">
-        <span class="icon">ðŸ””</span>
+      <button class="nav-item" data-view="alerts" aria-label="Alerts">
+        <span class="icon" aria-hidden="true">🔔</span>
         <span class="label">Alerts</span>
       </button>
-      <button class="nav-item" data-view="settings">
-        <span class="icon">âš™ï¸</span>
+      <button class="nav-item" data-view="settings" aria-label="Settings">
+        <span class="icon" aria-hidden="true">⚙️</span>
         <span class="label">Settings</span>
       </button>
     </nav>
   </div>
 
   <!-- Journey Tracker View (hidden by default) -->
-  <div class="journey-tracker-container" id="journeyTracker" style="display: none;">
+  <div class="journey-tracker-container" id="journeyTracker" style="display: none;" aria-label="Journey tracker">
     <!-- Populated by journeyTracker.js -->
   </div>
 
-  <!-- ES6 MODULE IMPORT -->
-  <script type="module" src="/js/app.js"></script>
+  <!-- ES6 MODULE IMPORT (relative path — works at root and on GitHub Pages) -->
+  <script type="module" src="./js/app.js"></script>
 
   <!-- Service Worker Registration -->
   <script>
     if ('serviceWorker' in navigator) {
       window.addEventListener('load', () => {
-        navigator.serviceWorker.register('/sw.js', { scope: '/' })
+        // Relative path resolves correctly regardless of hosting base (root or /TrainTrack/)
+        navigator.serviceWorker.register('./sw.js')
           .then(reg => console.log('[SW] Registered:', reg.scope))
           .catch(err => console.warn('[SW] Registration failed:', err));
       });
