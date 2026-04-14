@@ -15,6 +15,8 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
+  flex-wrap: wrap;
+  row-gap: var(--space-sm);
 }
 
 .home-header h1 {
@@ -99,6 +101,10 @@
   font-size: 48px;
   font-weight: 700;
   line-height: 1;
+}
+
+.countdown .time.text-sm {
+  font-size: 32px;
 }
 
 .countdown .unit {
@@ -295,4 +301,29 @@ section h3 {
 
 .nav-item:hover {
   background: rgba(0,0,0,0.02);
+}
+
+/* Line Tab active styling overrides */
+.line-tab {
+  transition: background var(--transition-base), color var(--transition-base);
+}
+
+.line-tab.tab-western.active {
+  background-color: var(--primary);
+  color: white;
+}
+
+.line-tab.tab-central.active {
+  background-color: var(--danger);
+  color: white;
+}
+
+.line-tab.tab-harbour.active {
+  background-color: var(--warning); /* using warning or another custom hex if wanted */
+  color: white;
+}
+
+.line-tab.tab-trans-harbour.active {
+  background-color: var(--success);
+  color: white;
 }

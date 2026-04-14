@@ -1,3 +1,5 @@
+import { escapeHTML } from '../utils/dataUtils.js';
+
 /**
  * Train Card Component
  */
@@ -6,25 +8,26 @@ export function createTrainCard(train) {
   const tpl = document.createElement('div');
   tpl.className = 'train-card';
   const trainNo = train.trainNo || train.number || train.train_id || '';
-  tpl.dataset.trainNumber = trainNo;
-  tpl.dataset.trainId = trainNo;
+  tpl.dataset.trainNumber = escapeHTML(trainNo);
+  tpl.dataset.trainId = escapeHTML(trainNo);
   
   // Provide safe defaults for potentially missing data
-  const tName = train.name || 'Local Train';
-  const tType = train.type || 'Local';
+  const tName = escapeHTML(train.name || 'Local Train');
+  const tTypeRaw = train.type || 'Local';
+  const tType = escapeHTML(tTypeRaw);
   const route = train.route || train.stops || [];
-  const tOrigin = train.from || train.origin || route[0] || '';
-  const tDest = train.to || train.destination || (route.length ? route[route.length - 1] : '') || '';
-  const tTime = train.departures?.[0]?.time || train.departureTime || '00:00';
-  const tPlatform = train.departures?.[0]?.platform || train.platform || '-';
-  const stopsLen = train.route ? train.route.length : (train.stops ? train.stops.length : 0);
+  const tOrigin = escapeHTML(train.from || train.origin || route[0] || '');
+  const tDest = escapeHTML(train.to || train.destination || (route.length ? route[route.length - 1] : '') || '');
+  const tTime = escapeHTML(train.departures?.[0]?.time || train.departureTime || '00:00');
+  const tPlatform = escapeHTML(train.departures?.[0]?.platform || train.platform || '-');
+  const stopsLen = escapeHTML(String(train.route ? train.route.length : (train.stops ? train.stops.length : 0)));
 
   // Note: delay info is populated via RailRadar API dynamically by app.js or fetched here.
   // For the initial DOM, we'll assume 'On Time' until proven otherwise, or we can leave it blank and let app.js hydrate.
   tpl.innerHTML = `
     <div class="train-header">
       <span class="train-name">${tName}</span>
-      <span class="train-type-badge ${tType.toLowerCase()}">${tType}</span>
+      <span class="train-type-badge ${escapeHTML(tTypeRaw.toLowerCase())}">${tType}</span>
       <span class="status-container"></span>
     </div>
     <div class="train-route">

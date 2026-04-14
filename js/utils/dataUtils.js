@@ -61,6 +61,19 @@ export function getNextDepartures(trains, station, limit = 5) {
   return passing.slice(0, limit);
 }
 
+/**
+ * Escapes potentially unsafe characters to prevent DOM-based XSS when injecting strings into innerHTML.
+ */
+export function escapeHTML(str) {
+  if (typeof str !== 'string') return String(str || '');
+  return str
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#039;");
+}
+
 export function calculateJourneyProgress(train, currentStation) {
   if (!train) return 0;
 

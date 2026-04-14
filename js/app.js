@@ -2,7 +2,7 @@ import { createTrainCard } from './components/trainCard.js';
 import { initJourneyTracker, updateETA } from './components/journeyTracker.js';
 import { initBottomNav } from './components/bottomNav.js';
 import { getGreeting, calculateCountdown, calculateETA } from './utils/timeUtils.js';
-import { getNextDepartures } from './utils/dataUtils.js';
+import { getNextDepartures, escapeHTML } from './utils/dataUtils.js';
 
 /**
  * TrainTrack - app.js
@@ -502,25 +502,37 @@ const TrainTrack = (() => {
       if (hero && upcoming.length > 0) {
         const next  = upcoming[0];
         const route = next.route || next.stops || [];
-        const fromLabel = next.from || route[0] || '';
-        const toLabel   = next.to || (route.length ? route[route.length - 1] : '');
+        const fromLabel = escapeHTML(next.from || route[0] || '');
+        const toLabel   = escapeHTML(next.to || (route.length ? route[route.length - 1] : ''));
+        const typeStr   = escapeHTML(next.type || 'Local');
+        
+        const countdownStr = calculateCountdown(next.departures?.[0]?.time || '00:00');
+        const isStatusText = isNaN(parseInt(countdownStr));
+        const timeClass = isStatusText ? 'time text-sm' : 'time';
+
         hero.innerHTML = `
           <div class="route-info">
             <h2>${fromLabel} to ${toLabel}</h2>
-            <span class="train-type">${next.type || 'Local'}</span>
+            <span class="train-type">${typeStr}</span>
           </div>
           <div class="departure-info">
             <div class="countdown">
-              <span class="time" id="hero-countdown">${calculateCountdown(next.departures?.[0]?.time || '00:00')}</span>
-              <span class="unit">MINUTES</span>
+              <span class="${timeClass}" id="hero-countdown">${countdownStr}</span>
+              ${isStatusText ? '' : '<span class="unit">MINUTES</span>'}
             </div>
-            <div class="platform">Platform ${next.departures?.[0]?.platform || 1}</div>
+            <div class="platform">Platform ${escapeHTML(String(next.departures?.[0]?.platform || 1))}</div>
           </div>
           <button class="cta-button" id="btnHeroLeavNow">Leave Now!</button>`;
 
         document.getElementById('btnHeroLeavNow')?.addEventListener('click', () => {
-          document.getElementById('journeyTracker').style.display = 'block';
-          document.querySelector('.home-container').style.display = 'none';
+          const hc = document.querySelector('.home-container');
+          const jt = document.getElementById('journeyTracker');
+          initJourneyTracker(next, () => {
+            if (hc) hc.style.display = 'block';
+            if (jt) jt.style.display = 'none';
+          });
+          if (hc) hc.style.display = 'none';
+          if (jt) jt.style.display = 'block';
         });
       }
     }

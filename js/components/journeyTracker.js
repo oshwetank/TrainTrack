@@ -2,6 +2,8 @@
  * Journey Tracker Component
  */
 
+import { escapeHTML } from '../utils/dataUtils.js';
+
 let currentTrain = null;
 let currentTrackingInterval = null;
 
@@ -11,6 +13,11 @@ export function initJourneyTracker(train, backCallback) {
   
   currentTrain = train;
   
+  const fromStr = escapeHTML(train.from || train.origin || 'Origin');
+  const toStr = escapeHTML(train.to || train.destination || 'Destination');
+  const typeStr = escapeHTML(train.type || 'Local');
+  const typeClass = escapeHTML(train.type ? train.type.toLowerCase() : '');
+
   // Create UI skeleton
   container.innerHTML = `
     <div class="tracker-header">
@@ -19,8 +26,8 @@ export function initJourneyTracker(train, backCallback) {
         Back
       </button>
       <div class="tracker-title">
-        <h2>${train.from || train.origin || 'Origin'} to ${train.to || train.destination || 'Destination'}</h2>
-        <span class="train-type-badge ${train.type ? train.type.toLowerCase() : ''}">${train.type || 'Local'}</span>
+        <h2>${fromStr} to ${toStr}</h2>
+        <span class="train-type-badge ${typeClass}">${typeStr}</span>
       </div>
     </div>
     
@@ -103,7 +110,7 @@ export function renderJourneyTimeline(train, currentStationIdx = 1) { // Mock 1 
     
     html += `
       <div class="${classes.join(' ')}">
-        <span class="stop-name">${stop}</span>
+        <span class="stop-name">${escapeHTML(String(stop))}</span>
         <span class="stop-platform">Pf. 1</span> <!-- Mocking Pf 1 for stops -->
         ${idx === currentStationIdx ? '<div class="in-transit-indicator">IN TRANSIT</div>' : ''}
       </div>
