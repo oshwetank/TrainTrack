@@ -1,14 +1,14 @@
-import { createTrainCard } from './components/trainCard.js';
+﻿import { createTrainCard } from './components/trainCard.js';
 import { initJourneyTracker, updateETA } from './components/journeyTracker.js';
 import { initBottomNav } from './components/bottomNav.js';
 import { getGreeting, calculateCountdown, calculateETA } from './utils/timeUtils.js';
 
 /**
- * TrainTrack — app.js
- * Mumbai Local Train Tracker · Phase 3: Bloom (PWA Resilience)
+ * TrainTrack - app.js
+ * Mumbai Local Train Tracker Â· Phase 3: Bloom (PWA Resilience)
  *
  * Architecture: Single TrainTrack namespace, Vanilla JS (zero framework)
- * Strategy:    Stale-While-Revalidate — render schedules.json instantly,
+ * Strategy:    Stale-While-Revalidate - render schedules.json instantly,
  *              hydrate with RailRadar live data in background.
  *              Background Sync API for schedule refresh on reconnect.
  * Performance: All DOM mutations via requestAnimationFrame
@@ -16,20 +16,18 @@ import { getGreeting, calculateCountdown, calculateETA } from './utils/timeUtils
  *              AbortSignal.timeout(8000) on all outbound fetches
  *
  * Modules:
- *   TrainTrack.Config    — constants, API endpoints, cache keys
- *   TrainTrack.Store     — localStorage prefs/favs + IndexedDB schedule cache
- *   TrainTrack.API       — fetch wrapper with in-memory SWR cache
- *   TrainTrack.Search    — O(n) station prefix-match autocomplete
- *   TrainTrack.UI        — RAF render queue, template cloning, glass drawer
- *   TrainTrack.Scheduler — visibility-aware 30s polling manager
- *   TrainTrack.App       — bootstrap & event orchestration
+ *   TrainTrack.Config    - constants, API endpoints, cache keys
+ *   TrainTrack.Store     - localStorage prefs/favs + IndexedDB schedule cache
+ *   TrainTrack.API       - fetch wrapper with in-memory SWR cache
+ *   TrainTrack.Search    - O(n) station prefix-match autocomplete
+ *   TrainTrack.App       - bootstrap & event orchestration
  */
 
-/* ─────────────────────────────────────────────────────────────────────────── */
-/* 0. NAMESPACE GUARD                                                          */
-/* ─────────────────────────────────────────────────────────────────────────── */
+/* -------------------------------------------------------------------------- */
+/* 0. NAMESPACE GUARD */
+/* -------------------------------------------------------------------------- */
 if (window.TrainTrack) {
-  console.warn('[TrainTrack] app.js loaded more than once — skipping re-init.');
+  console.warn('[TrainTrack] app.js loaded more than once - skipping re-init.');
 }
 
 const TrainTrack = (() => {
@@ -41,11 +39,11 @@ const TrainTrack = (() => {
   const Config = Object.freeze({
     VERSION: '1.3.0',
 
-    /* Static dataset — served from same origin, always available */
+    /* Static dataset - served from same origin, always available */
     SCHEDULES_URL:    './schedules.json',
     DISRUPTIONS_URL:  './disruptions.json',
 
-    /* RailRadar live API — third-party aggregator (railradar.in) */
+    /* RailRadar live API - third-party aggregator (railradar.in) */
     RAILRADAR_BASE: 'https://railradar.in/api',
 
     /* How long (ms) before a live API response is considered stale */
@@ -86,7 +84,7 @@ const TrainTrack = (() => {
       { id: 'metro_yellow', name: 'Metro Line 7 (Yellow)', color: '#eab308' },
     ],
 
-    /* Peak hour windows — 24-hour format */
+    /* Peak hour windows - 24-hour format */
     PEAK_HOURS: Object.freeze({
       morning: { start: 7,  end: 11 },
       evening: { start: 17, end: 22 },
@@ -104,10 +102,10 @@ const TrainTrack = (() => {
   });
 
   /* =========================================================================
-     2. STORE — localStorage & IndexedDB
+     2. STORE - localStorage & IndexedDB
      ========================================================================= */
   const Store = (() => {
-    /* ── 2a. localStorage helpers ── */
+    /* -- 2a. localStorage helpers -- */
     function ls_get(key, fallback = null) {
       try { return JSON.parse(localStorage.getItem(key)) ?? fallback; }
       catch { return fallback; }
@@ -117,7 +115,7 @@ const TrainTrack = (() => {
       catch (e) { console.warn('[Store] localStorage write failed:', e); }
     }
 
-    /* ── 2b. Preferences ── */
+    /* -- 2b. Preferences -- */
     function getPrefs() {
       return {
         line:     ls_get(Config.LS_LINE,    'western'),
@@ -135,7 +133,7 @@ const TrainTrack = (() => {
       if ('autoref' in patch) ls_set(Config.LS_REFRESH, patch.autoref);
     }
 
-    /* ── 2c. Favourites ── */
+    /* -- 2c. Favourites -- */
     function getFavourites() { return ls_get(Config.LS_FAVS, []); }
     function addFavourite(from, to, line) {
       const favs = getFavourites();
@@ -152,7 +150,7 @@ const TrainTrack = (() => {
       ls_set(Config.LS_FAVS, favs);
     }
 
-    /* ── 2d. IndexedDB — schedule cache ── */
+    /* -- 2d. IndexedDB - schedule cache -- */
     let _db = null;
 
     async function openDB() {
@@ -201,13 +199,13 @@ const TrainTrack = (() => {
   })();
 
   /* =========================================================================
-     3. API — Fetch with Stale-While-Revalidate
+     3. API - Fetch with Stale-While-Revalidate
      ========================================================================= */
   const API = (() => {
-    /* In-memory response cache: key → { data, ts } */
+    /* In-memory response cache: key â†’ { data, ts } */
     const _cache = new Map();
 
-    /* ── 3a. Core fetch wrapper — JSON only ── */
+    /* -- 3a. Core fetch wrapper - JSON only -- */
     async function _fetch(url, opts = {}) {
       const res = await fetch(url, {
         signal: opts.signal ?? AbortSignal.timeout(8000),
@@ -218,7 +216,7 @@ const TrainTrack = (() => {
       return res.json();
     }
 
-    /* ── 3b. Stale-While-Revalidate wrapper ── */
+    /* -- 3b. Stale-While-Revalidate wrapper -- */
     async function fetchSWR(key, fetchFn, opts = {}) {
       const cached = _cache.get(key);
       const now = Date.now();
@@ -235,23 +233,23 @@ const TrainTrack = (() => {
         return { data: cached.data, fromCache: true, revalidating: true };
       }
 
-      /* No cache at all — must await */
+      /* No cache at all - must await */
       const data = await fetchFn();
       _cache.set(key, { data, ts: Date.now() });
       return { data, fromCache: false };
     }
 
-    /* ── 3c. Load static schedules.json (always succeeds — local file) ── */
+    /* -- 3c. Load static schedules.json (always succeeds - local file) -- */
     async function loadSchedules() {
       const key = 'local:schedules';
       return fetchSWR(key, () => _fetch(Config.SCHEDULES_URL), { ttl: Infinity });
     }
 
-    /* ── 3d. RailRadar live station arrivals ─────────────────────────────
+    /* -- 3d. RailRadar live station arrivals -----------------------------
        Endpoint: GET /api/station/{stationCode}/arrivals
-       Free public endpoint — no key required for basic lookup.
+       Free public endpoint - no key required for basic lookup.
        Returns array of { trainNo, name, eta, delay, platform }
-       Falls back silently on network error or CORS block.              ── */
+       Falls back silently on network error or CORS block.              -- */
     async function fetchLiveArrivals(stationCode, signal) {
       const key = `live:arrivals:${stationCode}`;
       return fetchSWR(key, async () => {
@@ -260,9 +258,9 @@ const TrainTrack = (() => {
       }, { ttl: Config.CACHE_TTL_MS });
     }
 
-    /* ── 3e. RailRadar live train status ─────────────────────────────────
+    /* -- 3e. RailRadar live train status ---------------------------------
        Endpoint: GET /api/trains/{trainNo}/live
-       Returns { trainNo, currentStation, delay, nextStation, platform }  ── */
+       Returns { trainNo, currentStation, delay, nextStation, platform }  -- */
     async function fetchTrainLive(trainNo, signal) {
       const key = `live:train:${trainNo}`;
       return fetchSWR(key, async () => {
@@ -271,13 +269,13 @@ const TrainTrack = (() => {
       }, { ttl: Config.CACHE_TTL_MS });
     }
 
-    /* ── 3f. Batch live hydration for visible train cards ── */
+    /* -- 3f. Batch live hydration for visible train cards -- */
     async function hydrateBatch(trainNumbers) {
       const settled = await Promise.allSettled(
         trainNumbers.map(n => fetchTrainLive(n, AbortSignal.timeout(8000)))
       );
 
-      /* Build a map: trainNo → live data (undefined if failed) */
+      /* Build a map: trainNo â†’ live data (undefined if failed) */
       const map = {};
       settled.forEach((result, i) => {
         if (result.status === 'fulfilled') {
@@ -291,7 +289,7 @@ const TrainTrack = (() => {
   })();
 
   /* =========================================================================
-     4. SEARCH — station prefix-match autocomplete
+     4. SEARCH - station prefix-match autocomplete
      ========================================================================= */
   const Search = (() => {
     /* Flat array of { code, name, line } populated from schedules */
@@ -311,7 +309,7 @@ const TrainTrack = (() => {
       });
     }
 
-    /* Simple linear scan — fast enough for ~80 stations */
+    /* Simple linear scan - fast enough for ~80 stations */
     function query(text, line = null) {
       if (!text || text.length < 1) return [];
       const q = text.toLowerCase();
@@ -330,7 +328,7 @@ const TrainTrack = (() => {
   })();
 
   /* =========================================================================
-     5. UI — DOM binding, RAF render queue
+     5. UI - DOM binding, RAF render queue
      ========================================================================= */
   
   // Initialize Amber Dawn UI
@@ -371,7 +369,7 @@ const TrainTrack = (() => {
     }
     
     function _renderHome() {
-      const trains = _scheduleData?.trains?.western || [];
+      const line = Store.getPrefs().line || "western";\n      const trains = _scheduleData?.trains?.[line] || [];
       const list = document.getElementById('trainList');
       if (!list) return;
       

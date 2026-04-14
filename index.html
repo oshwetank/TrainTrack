@@ -1,15 +1,15 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en" data-theme="light">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
-  <meta name="description" content="TrainTrack — Mumbai Local Train Tracker. Real-time departures, delays and platforms for Western, Central and Harbour lines." />
+  <meta name="description" content="TrainTrack â€” Mumbai Local Train Tracker. Real-time departures, delays and platforms for Western, Central and Harbour lines." />
   <meta name="mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
   <meta name="apple-mobile-web-app-title" content="TrainTrack" />
 
-  <title>TrainTrack — Mumbai Local</title>
+  <title>TrainTrack â€” Mumbai Local</title>
 
   <!-- PWA Manifest -->
   <link rel="manifest" href="/manifest.json" />
@@ -29,11 +29,18 @@
     <header class="home-header">
       <h1 id="greeting">Good evening, Traveler</h1>
       <div class="header-actions">
-        <button class="icon-btn" aria-label="Search">🔍</button>
-        <button class="icon-btn" aria-label="Settings">⚙️</button>
+        <button class="icon-btn" type="button" aria-label="Search">Search</button>
+        <button class="icon-btn" type="button" aria-label="Settings">Settings</button>
       </div>
     </header>
 
+
+    <nav class="line-tabs" aria-label="Railway line">
+      <button class="line-tab tab-western active" type="button" data-line="western" aria-current="page">Western</button>
+      <button class="line-tab tab-central" type="button" data-line="central">Central</button>
+      <button class="line-tab tab-harbour" type="button" data-line="harbour">Harbour</button>
+      <button class="line-tab tab-trans-harbour" type="button" data-line="trans_harbour">Trans-Harbour</button>
+    </nav>
     <section class="next-train-card" id="nextTrainCard">
       <!-- Dynamically populated by JS -->
     </section>
@@ -44,11 +51,11 @@
         <!-- Dynamically populated -->
         <button class="journey-badge">
            <span>VR → CCG</span>
-           <span class="arrow">→</span>
+           <span class="arrow">â†’</span>
         </button>
         <button class="journey-badge">
            <span>BVI → ADH</span>
-           <span class="arrow">→</span>
+           <span class="arrow">â†’</span>
         </button>
       </div>
     </section>
@@ -62,15 +69,15 @@
 
     <nav class="bottom-nav">
       <button class="nav-item active" data-view="home">
-        <span class="icon">🏠</span>
+        <span class="icon">ðŸ </span>
         <span class="label">Home</span>
       </button>
       <button class="nav-item" data-view="alerts">
-        <span class="icon">🔔</span>
+        <span class="icon">ðŸ””</span>
         <span class="label">Alerts</span>
       </button>
       <button class="nav-item" data-view="settings">
-        <span class="icon">⚙️</span>
+        <span class="icon">âš™ï¸</span>
         <span class="label">Settings</span>
       </button>
     </nav>
