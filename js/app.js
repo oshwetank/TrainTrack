@@ -401,16 +401,18 @@ const TrainTrack = (() => {
         const cached = await Store.getCachedSchedules();
         if (cached) {
           _scheduleData = cached;
+                      Search.index(cached);  // Index cached stations for immediate search
           _renderHome();
         }
 
         const { data: freshData } = await API.loadSchedules();
         _scheduleData = freshData;
         await Store.cacheSchedules(freshData);
+                    Search.index(freshData);  // Index stations for search autocomplete
         if (!cached) _renderHome();
 
       } catch (e) {
-        console.error('[TrainTrack] Failed to load schedules', e);
+        console.error('[TrainTrack] Failed to 
         const list = document.getElementById('trainList');
         if (list) {
           list.innerHTML = `
