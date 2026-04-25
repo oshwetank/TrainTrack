@@ -7,6 +7,11 @@ import { escapeHTML } from '../utils/dataUtils.js';
 let currentTrain = null;
 let currentTrackingInterval = null;
 
+export function stopJourneyTracking() {
+  if (currentTrackingInterval) { clearInterval(currentTrackingInterval); currentTrackingInterval = null; }
+  currentTrain = null;
+}
+
 export function initJourneyTracker(train, backCallback) {
   const container = document.getElementById('journeyTracker');
   if (!container) return;
@@ -84,39 +89,57 @@ export function initJourneyTracker(train, backCallback) {
   }
 
   renderJourneyTimeline(train);
+
+  /* Refresh timeline every 60s so current-stop advances automatically */
+  if (currentTrackingInterval) clearInterval(currentTrackingInterval);
+  currentTrackingInterval = setInterval(() => renderJourneyTimeline(train), 60_000);
 }
 
-export function renderJourneyTimeline(train, currentStationIdx = 1) { // Mock 1 station advanced
+export function renderJourneyTimeline(train) {
   const container = document.getElementById('timelineStops');
   if (!container || !train) return;
-  
+
   const stops = train.route || train.stops || [];
   if (stops.length === 0) {
-    container.innerHTML = '<p>No route information available.</p>';
+    container.innerHTML = '<p class="empty-hint">No route information available.</p>';
     return;
   }
-  
-  let html = '';
-  
-  stops.forEach((stop, idx) => {
-    let classes = ['stop-item'];
-    
-    // For prototyping: mark completed/active based on mocked idx
-    if (idx < currentStationIdx) {
-      classes.push('completed');
-    } else if (idx === currentStationIdx) {
-      classes.push('active');
-    }
-    
-    html += `
-      <div class="${classes.join(' ')}">
-        <span class="stop-name">${escapeHTML(String(stop))}</span>
-        <span class="stop-platform">Pf. 1</span> <!-- Mocking Pf 1 for stops -->
-        ${idx === currentStationIdx ? '<div class="in-transit-indicator">IN TRANSIT</div>' : ''}
-      </div>
-    `;
+
+  /* Build a lookup: stationCode → { time, platform } from train.departures */
+  const depMap = {};
+  (train.departures || []).forEach(d => {
+    if (d.station) depMap[d.station] = { time: d.time || '', platform: d.platform || '—' };
   });
-  
+
+  /* Determine current position by time */
+  const nowMins = new Date().getHours() * 60 + new Date().getMinutes();
+  let currentIdx = 0;
+  stops.forEach((code, idx) => {
+    const dep = depMap[code];
+    if (!dep?.time) return;
+    const [h, m] = dep.time.split(':').map(Number);
+    if (!isNaN(h) && (h * 60 + m) <= nowMins) currentIdx = idx;
+  });
+
+  let html = '';
+  stops.forEach((code, idx) => {
+    const dep = depMap[code] ?? {};
+    const isPast   = idx < currentIdx;
+    const isCurrent = idx === currentIdx;
+    const cls = isPast ? 'stop-item completed' : isCurrent ? 'stop-item active' : 'stop-item';
+
+    html += `
+      <div class="${cls}">
+        <div class="stop-dot"></div>
+        <div class="stop-info">
+          <span class="stop-name">${escapeHTML(String(code))}</span>
+          ${dep.time ? `<span class="stop-time">${escapeHTML(dep.time)}</span>` : ''}
+        </div>
+        <span class="stop-platform">${dep.platform ? `Pf ${escapeHTML(String(dep.platform))}` : ''}</span>
+        ${isCurrent ? '<div class="in-transit-indicator">NOW</div>' : ''}
+      </div>`;
+  });
+
   container.innerHTML = html;
 }
 

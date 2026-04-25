@@ -1,5 +1,5 @@
 import { createTrainCard } from './components/trainCard.js';
-import { initJourneyTracker, updateETA } from './components/journeyTracker.js';
+import { initJourneyTracker, updateETA, stopJourneyTracking } from './components/journeyTracker.js';
 import { initBottomNav } from './components/bottomNav.js';
 import { initSearch } from './components/searchUI.js';
 import { getGreeting, calculateCountdown, calculateETA } from './utils/timeUtils.js';
@@ -70,8 +70,8 @@ const TrainTrack = (() => {
     IDB_VERSION: 2,
     IDB_STORE:   'schedule-cache',
 
-    /* Suburban Lines */
-    LINES: ['western', 'central', 'harbour', 'trans_harbour'],
+    /* All lines (suburban + metro) — used for station indexing */
+    LINES: ['western', 'central', 'harbour', 'trans_harbour', 'metro_aqua', 'metro_red', 'metro_yellow'],
     LINE_COLORS: {
       western: '#3b82f6',
       central: '#ef4444',
@@ -369,8 +369,8 @@ const TrainTrack = (() => {
       /* Click handler */
       tabs.forEach(tab => {
         tab.addEventListener('click', () => {
+          _requestNotifPermission();
           const selectedLine = tab.dataset.line;
-          Store.savePrefs({ line: selectedLine });
 
           tabs.forEach(t => {
             t.classList.remove('active');
@@ -429,10 +429,17 @@ const TrainTrack = (() => {
       }
 
       setInterval(_updateCountdowns, 60_000);
+      _scheduleDepartureAlert();
+      setInterval(_scheduleDepartureAlert, 60_000);
 
       window.addEventListener('online', () => {
         console.log('[TrainTrack] Back online — refreshing…');
         _renderHome();
+      });
+
+      window.addEventListener('traintrack:station-changed', () => {
+        _renderHome();
+        _renderSavedJourneys();
       });
     }
 
@@ -488,9 +495,10 @@ const TrainTrack = (() => {
           if (jt) jt.style.display = 'block';
 
           initJourneyTracker(t, () => {
+            stopJourneyTracking();
+            if (_activeTrainPoll) clearInterval(_activeTrainPoll);
             if (hc) hc.style.display = 'block';
             if (jt) jt.style.display = 'none';
-            if (_activeTrainPoll) clearInterval(_activeTrainPoll);
           });
 
           const route = t.route || t.stops || [];
@@ -528,9 +536,11 @@ const TrainTrack = (() => {
         const toLabel   = escapeHTML(next.to || (route.length ? route[route.length - 1] : ''));
         const typeStr   = escapeHTML(next.type || 'Local');
         
-        const countdownStr = calculateCountdown(next.departures?.[0]?.time || '00:00');
-        const isStatusText = isNaN(parseInt(countdownStr));
+        const countdownRaw = calculateCountdown(next.departures?.[0]?.time || '00:00');
+        const countdownNum = parseInt(countdownRaw, 10);
+        const isStatusText = isNaN(countdownNum);
         const timeClass = isStatusText ? 'time text-sm' : 'time';
+        const displayStr = isStatusText ? escapeHTML(countdownRaw) : String(countdownNum);
 
         hero.innerHTML = `
           <div class="route-info">
@@ -539,7 +549,7 @@ const TrainTrack = (() => {
           </div>
           <div class="departure-info">
             <div class="countdown">
-              <span class="${timeClass}" id="hero-countdown">${countdownStr}</span>
+              <span class="${timeClass}" id="hero-countdown">${displayStr}</span>
               ${isStatusText ? '' : '<span class="unit">MINUTES</span>'}
             </div>
             <div class="platform">Platform ${escapeHTML(String(next.departures?.[0]?.platform || 1))}</div>
@@ -550,6 +560,7 @@ const TrainTrack = (() => {
           const hc = document.querySelector('.home-container');
           const jt = document.getElementById('journeyTracker');
           initJourneyTracker(next, () => {
+            stopJourneyTracking();
             if (hc) hc.style.display = 'block';
             if (jt) jt.style.display = 'none';
           });
@@ -557,6 +568,52 @@ const TrainTrack = (() => {
           if (jt) jt.style.display = 'block';
         });
       }
+    }
+
+    /* Segment C: departure alert — fires when next train is ≤ walkTime+10 min away */
+    let _lastAlertedTrain = null;
+    function _scheduleDepartureAlert() {
+      if (!_scheduleData) return;
+      if (typeof Notification === 'undefined' || Notification.permission !== 'granted') return;
+
+      const prefs     = Store.getPrefs();
+      const line      = prefs.line || 'western';
+      const allTrains = _scheduleData?.trains?.[line] || [];
+      const upcoming  = prefs.from ? getNextDepartures(allTrains, prefs.from, 1) : [];
+      if (!upcoming.length) return;
+
+      const next       = upcoming[0];
+      const depTime    = next.departures?.[0]?.time || next.departureTime;
+      if (!depTime) return;
+
+      const walkMins   = ls_get_raw(Config.WALK_TIME_KEY) ?? Config.DEFAULT_WALK_TIME;
+      const threshold  = walkMins + 10;
+      const nowMins    = new Date().getHours() * 60 + new Date().getMinutes();
+      const [dh, dm]   = depTime.split(':').map(Number);
+      const depMins    = dh * 60 + dm;
+      const minsAway   = depMins - nowMins;
+
+      const alertKey = `${next.trainNo}:${depTime}`;
+      if (minsAway > 0 && minsAway <= threshold && _lastAlertedTrain !== alertKey) {
+        _lastAlertedTrain = alertKey;
+        new Notification('TrainTrack — Time to leave!', {
+          body: `${escapeHTML(next.name || 'Your train')} departs in ${minsAway} min. Walk time: ${walkMins} min.`,
+          icon: './icons/icon-192.png',
+          badge: './icons/icon-192.png',
+          tag: 'departure-alert',
+        });
+      }
+    }
+
+    /* Request notification permission on first meaningful interaction */
+    function _requestNotifPermission() {
+      if (typeof Notification !== 'undefined' && Notification.permission === 'default') {
+        Notification.requestPermission();
+      }
+    }
+
+    function ls_get_raw(key) {
+      try { return JSON.parse(localStorage.getItem(key)); } catch { return null; }
     }
 
     function _renderSavedJourneys() {

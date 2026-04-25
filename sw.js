@@ -15,7 +15,7 @@
  *   self.registration.scope to normalise pathnames at runtime.
  */
 
-const CACHE_VERSION = 'traintrack-v1.4.3';
+const CACHE_VERSION = 'traintrack-v1.5.0';
 const STATIC_CACHE  = `traintrack-static-${CACHE_VERSION}`;
 const DATA_CACHE    = `traintrack-data-${CACHE_VERSION}`;
 const ALL_CACHES    = [STATIC_CACHE, DATA_CACHE];
@@ -36,6 +36,7 @@ const SHELL_ASSETS = [
   './css/home.css',
   './css/journey-tracker.css',
   './css/legacy.css',
+  './css/alerts.css',
 
   // JS (ES module tree)
   './js/app.js',
@@ -45,11 +46,16 @@ const SHELL_ASSETS = [
   './js/utils/timeUtils.js',
   './js/utils/dataUtils.js',
 
-  // Web font
+  // Web fonts
   'https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap',
+  'https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700&family=Be+Vietnam+Pro:wght@400;500;600&display=swap',
+
+  // JS (additional views)
+  './js/components/alertsView.js',
+  './js/components/settingsView.js',
 ];
 
-const RAILRADAR_ORIGIN = 'https://railradar.in';
+const RAILRADAR_ORIGIN = 'https://traintrack-proxy.oshwetank.workers.dev';
 
 /* ── Fetch routing note ────────────────────────────────────────────────────
    Order matters: the first matching branch wins.

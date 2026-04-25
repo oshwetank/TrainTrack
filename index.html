@@ -36,10 +36,17 @@
     </header>
 
     <nav class="line-tabs" aria-label="Railway line">
-      <button class="line-tab tab-western active" type="button" data-line="western" aria-current="page">Western</button>
-      <button class="line-tab tab-central" type="button" data-line="central">Central</button>
-      <button class="line-tab tab-harbour" type="button" data-line="harbour">Harbour</button>
-      <button class="line-tab tab-trans-harbour" type="button" data-line="trans_harbour">Trans-Harbour</button>
+      <div class="tab-group" aria-label="Suburban lines">
+        <button class="line-tab tab-western active" type="button" data-line="western" aria-current="page">Western</button>
+        <button class="line-tab tab-central" type="button" data-line="central">Central</button>
+        <button class="line-tab tab-harbour" type="button" data-line="harbour">Harbour</button>
+        <button class="line-tab tab-trans-harbour" type="button" data-line="trans_harbour">Trans-Harbour</button>
+      </div>
+      <div class="tab-group tab-group-metro" aria-label="Metro lines">
+        <button class="line-tab tab-metro-aqua" type="button" data-line="metro_aqua">Metro 1</button>
+        <button class="line-tab tab-metro-red" type="button" data-line="metro_red">Metro 2A</button>
+        <button class="line-tab tab-metro-yellow" type="button" data-line="metro_yellow">Metro 7</button>
+      </div>
     </nav>
 
     <section class="next-train-card" id="nextTrainCard" aria-label="Next train">
@@ -99,6 +106,16 @@
   <!-- Journey Tracker View (hidden by default) -->
   <div class="journey-tracker-container" id="journeyTracker" style="display: none;" aria-label="Journey tracker">
     <!-- Populated by journeyTracker.js -->
+  </div>
+
+  <!-- Alerts View (hidden by default) -->
+  <div class="secondary-view" id="alertsView" style="display: none;" aria-label="Service alerts">
+    <!-- Populated by alertsView.js -->
+  </div>
+
+  <!-- Settings View (hidden by default) -->
+  <div class="secondary-view" id="settingsView" style="display: none;" aria-label="Settings">
+    <!-- Populated by settingsView.js -->
   </div>
 
   <!-- ES6 MODULE IMPORT (relative path — works at root and on GitHub Pages) -->
