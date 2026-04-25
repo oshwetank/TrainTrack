@@ -68,16 +68,16 @@
     </section>
 
     <nav class="bottom-nav" aria-label="Main navigation">
-      <button class="nav-item active" data-view="home" aria-label="Home">
-        <span class="icon" aria-hidden="true">🏠</span>
+      <button class="nav-item active" data-view="home" aria-current="page" aria-label="Home">
+        <svg class="icon" aria-hidden="true" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
         <span class="label">Home</span>
       </button>
       <button class="nav-item" data-view="alerts" aria-label="Alerts">
-        <span class="icon" aria-hidden="true">🔔</span>
+        <svg class="icon" aria-hidden="true" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
         <span class="label">Alerts</span>
       </button>
       <button class="nav-item" data-view="settings" aria-label="Settings">
-        <span class="icon" aria-hidden="true">⚙️</span>
+        <svg class="icon" aria-hidden="true" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
         <span class="label">Settings</span>
       </button>
     </nav>
@@ -88,12 +88,12 @@
     <div class="search-header">
       <button class="icon-btn search-back-btn" id="btnSearchBack" aria-label="Back">Back</button>
       <div class="search-input-wrapper">
-        <input type="text" id="searchInput" class="search-input" placeholder="Search station (e.g., Andheri)" aria-label="Station name" autocomplete="off" />
+        <input type="text" id="searchInput" class="search-input" placeholder="Search station (e.g., Andheri)" aria-label="Station name" autocomplete="off" role="combobox" aria-expanded="false" aria-autocomplete="list" aria-controls="searchResults" aria-haspopup="listbox" />
         <button class="clear-search-btn" id="btnClearSearch" aria-label="Clear search" style="display: none;">×</button>
       </div>
     </div>
     <div class="search-results-viewport">
-      <div class="search-results-list" id="searchResults" aria-live="polite">
+      <div class="search-results-list" id="searchResults" role="listbox" aria-label="Station suggestions" aria-live="polite">
         <!-- Populated by searchUI.js -->
         <div class="search-placeholder">
           <span class="search-icon" aria-hidden="true">🔍</span>

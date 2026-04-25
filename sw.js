@@ -29,12 +29,13 @@ const SHELL_ASSETS = [
   './schedules.json',
   './disruptions.json',
 
-  // CSS (Amber Dawn modular architecture)
+  // CSS
   './css/styles.css',
   './css/design-system.css',
   './css/components.css',
   './css/home.css',
   './css/journey-tracker.css',
+  './css/search.css',
   './css/legacy.css',
   './css/alerts.css',
 
@@ -43,16 +44,16 @@ const SHELL_ASSETS = [
   './js/components/trainCard.js',
   './js/components/journeyTracker.js',
   './js/components/bottomNav.js',
-  './js/utils/timeUtils.js',
-  './js/utils/dataUtils.js',
-
-  // Web fonts
-  'https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap',
-  'https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700&family=Be+Vietnam+Pro:wght@400;500;600&display=swap',
-
-  // JS (additional views)
   './js/components/alertsView.js',
   './js/components/settingsView.js',
+  './js/utils/timeUtils.js',
+  './js/utils/dataUtils.js',
+];
+
+/* Fonts cached best-effort — failure here must NOT block SW install */
+const FONT_URLS = [
+  'https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap',
+  'https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700&family=Be+Vietnam+Pro:wght@400;500;600&display=swap',
 ];
 
 const RAILRADAR_ORIGIN = 'https://traintrack-proxy.oshwetank.workers.dev';
@@ -70,6 +71,14 @@ const RAILRADAR_ORIGIN = 'https://traintrack-proxy.oshwetank.workers.dev';
    (e.g. /TrainTrack/css/styles.css). We resolve SHELL_ASSETS to their full
    absolute URLs at install time and store them in _shellSet for O(1) lookup.
    ───────────────────────────────────────────────────────────────────────── */
+
+/* AbortSignal.timeout polyfill for older browsers */
+function timeoutSignal(ms) {
+  if (typeof AbortSignal !== 'undefined' && AbortSignal.timeout) return AbortSignal.timeout(ms);
+  const ctrl = new AbortController();
+  setTimeout(() => ctrl.abort(), ms);
+  return ctrl.signal;
+}
 
 /* Resolved absolute URLs of shell assets — populated during install. */
 let _shellSet  = null;
@@ -92,12 +101,13 @@ function _buildShellSet() {
 /* ── Install: pre-cache app shell ────────────────────────────────────────── */
 self.addEventListener('install', (event) => {
   event.waitUntil(
-    caches.open(STATIC_CACHE).then(cache => {
+    caches.open(STATIC_CACHE).then(async cache => {
       console.log('[SW] Pre-caching app shell…');
       _buildShellSet();
-      // addAll with relative paths resolves against sw.js location automatically
-      return cache.addAll(SHELL_ASSETS);
-    }).then(() => self.skipWaiting())    /* activate immediately */
+      await cache.addAll(SHELL_ASSETS);
+      /* Fonts: best-effort — network blocks (corporate proxies, etc.) must not break install */
+      await Promise.allSettled(FONT_URLS.map(url => cache.add(url)));
+    }).then(() => self.skipWaiting())
   );
 });
 
@@ -168,7 +178,7 @@ async function cacheFirst(request, cacheName) {
 async function networkFirstWithCache(request, cacheName) {
   const cache = await caches.open(cacheName);
   try {
-    const response = await fetch(request, { signal: AbortSignal.timeout(8000) });
+    const response = await fetch(request, { signal: timeoutSignal(8000) });
     if (response.ok) cache.put(request, response.clone());
     return response;
   } catch (_err) {
@@ -183,7 +193,7 @@ async function staleWhileRevalidate(request, cacheName) {
   const cached = await cache.match(request);
 
   /* Kick off network request in background regardless */
-  const networkPromise = fetch(request, { signal: AbortSignal.timeout(8000) }).then(response => {
+  const networkPromise = fetch(request, { signal: timeoutSignal(8000) }).then(response => {
     if (response.ok) cache.put(request, response.clone());
     return response;
   }).catch(() => null);
@@ -195,12 +205,13 @@ async function staleWhileRevalidate(request, cacheName) {
 /* ── Background Sync (when connection restores) ──────────────────────────── */
 self.addEventListener('sync', (event) => {
   if (event.tag === 'sync-schedules') {
+    const scheduleUrl = new URL('./schedules.json', self.registration.scope).href;
     event.waitUntil(
-      fetch('./schedules.json')
+      fetch(scheduleUrl)
         .then(async res => {
           if (res.ok) {
             const cache = await caches.open(STATIC_CACHE);
-            cache.put('./schedules.json', res);
+            cache.put(scheduleUrl, res);
             console.log('[SW] schedules.json refreshed via background sync');
           }
         })

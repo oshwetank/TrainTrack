@@ -21,8 +21,7 @@ export function initSearch(App, Store, SearchModule) {
     searchContainer.style.display = 'flex';
     homeContainer.style.display = 'none';
     if (journeyTracker) journeyTracker.style.display = 'none';
-    
-    // Auto focus the input after animation
+    searchInput.setAttribute('aria-expanded', 'true');
     setTimeout(() => searchInput.focus(), 50);
     renderResults(searchInput.value);
   }
@@ -30,6 +29,7 @@ export function initSearch(App, Store, SearchModule) {
   function closeSearch() {
     searchContainer.style.display = 'none';
     homeContainer.style.display = 'block';
+    searchInput.setAttribute('aria-expanded', 'false');
   }
 
   function clearSearch() {

@@ -3,7 +3,7 @@ import { initJourneyTracker, updateETA, stopJourneyTracking } from './components
 import { initBottomNav } from './components/bottomNav.js';
 import { initSearch } from './components/searchUI.js';
 import { getGreeting, calculateCountdown, calculateETA } from './utils/timeUtils.js';
-import { getNextDepartures, escapeHTML } from './utils/dataUtils.js';
+import { getNextDepartures, escapeHTML, timeoutSignal } from './utils/dataUtils.js';
 
 /**
  * TrainTrack - app.js
@@ -15,7 +15,7 @@ import { getNextDepartures, escapeHTML } from './utils/dataUtils.js';
  *              Background Sync API for schedule refresh on reconnect.
  * Performance: All DOM mutations via requestAnimationFrame
  *              60-second live polling (paused on Page Visibility hidden)
- *              AbortSignal.timeout(8000) on all outbound fetches
+ *              timeoutSignal(8000) on all outbound fetches
  *
  * Modules:
  *   TrainTrack.Config    - constants, API endpoints, cache keys
@@ -210,7 +210,7 @@ const TrainTrack = (() => {
     /* -- 3a. Core fetch wrapper - JSON only -- */
     async function _fetch(url, opts = {}) {
       const res = await fetch(url, {
-        signal: opts.signal ?? AbortSignal.timeout(8000),
+        signal: opts.signal ?? timeoutSignal(8000),
         headers: { 'Accept': 'application/json', ...(opts.headers ?? {}) },
         ...opts,
       });
@@ -276,7 +276,7 @@ const TrainTrack = (() => {
     /* -- 3f. Batch live hydration for visible train cards -- */
     async function hydrateBatch(trainNumbers) {
       const settled = await Promise.allSettled(
-        trainNumbers.map(n => fetchTrainLive(n, AbortSignal.timeout(8000)))
+        trainNumbers.map(n => fetchTrainLive(n, timeoutSignal(8000)))
       );
 
       /* Build a map: trainNo → live data (undefined if failed) */
@@ -416,7 +416,7 @@ const TrainTrack = (() => {
         }
 
       } catch (e) {
-        console.error('[TrainTrack] Failed to 
+        console.error('[TrainTrack] Failed to load schedule data:', e);
         const list = document.getElementById('trainList');
         if (list) {
           list.innerHTML = `
@@ -512,7 +512,7 @@ const TrainTrack = (() => {
         /* Hydrate with live delay status */
         const trainId = t.trainNo || t.number || t.train_id;
         if (trainId) {
-          API.fetchTrainLive(trainId, AbortSignal.timeout(8000))
+          API.fetchTrainLive(trainId, timeoutSignal(8000))
             .then(res => {
               const liveData  = res.data;
               const delayInfo = liveData

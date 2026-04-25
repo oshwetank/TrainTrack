@@ -177,6 +177,24 @@
   white-space: nowrap;
 }
 
+/* ── View Transitions ────────────────────────────────────────────────────── */
+.view-transition {
+  opacity: 0;
+  transform: translateY(6px);
+  transition: opacity var(--transition-base), transform var(--transition-base);
+  pointer-events: none;
+}
+
+.view-active {
+  opacity: 1 !important;
+  transform: translateY(0) !important;
+  pointer-events: auto !important;
+}
+
+.home-container {
+  transition: opacity var(--transition-base);
+}
+
 /* ── Live N/A Badge ──────────────────────────────────────────────────────── */
 .offline-badge {
   display: inline-flex;

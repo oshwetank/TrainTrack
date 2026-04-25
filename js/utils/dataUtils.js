@@ -2,6 +2,14 @@
  * Data utilities for train filtering and route manipulation
  */
 
+/* AbortSignal.timeout polyfill for Chrome <103, older Android WebViews */
+export function timeoutSignal(ms) {
+  if (typeof AbortSignal !== 'undefined' && AbortSignal.timeout) return AbortSignal.timeout(ms);
+  const ctrl = new AbortController();
+  setTimeout(() => ctrl.abort(), ms);
+  return ctrl.signal;
+}
+
 export function filterTrainsByRoute(trains, origin, destination) {
   if (!trains || !Array.isArray(trains)) return [];
   
