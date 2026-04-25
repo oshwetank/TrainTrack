@@ -15,7 +15,7 @@
  *   self.registration.scope to normalise pathnames at runtime.
  */
 
-const CACHE_VERSION = 'traintrack-v1.5.0';
+const CACHE_VERSION = 'traintrack-v1.5.2';
 const STATIC_CACHE  = `traintrack-static-${CACHE_VERSION}`;
 const DATA_CACHE    = `traintrack-data-${CACHE_VERSION}`;
 const ALL_CACHES    = [STATIC_CACHE, DATA_CACHE];
@@ -46,13 +46,13 @@ const SHELL_ASSETS = [
   './js/components/bottomNav.js',
   './js/components/alertsView.js',
   './js/components/settingsView.js',
+  './js/components/searchUI.js',
   './js/utils/timeUtils.js',
   './js/utils/dataUtils.js',
 ];
 
 /* Fonts cached best-effort — failure here must NOT block SW install */
 const FONT_URLS = [
-  'https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap',
   'https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700&family=Be+Vietnam+Pro:wght@400;500;600&display=swap',
 ];
 

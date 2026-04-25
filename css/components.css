@@ -195,6 +195,30 @@
   transition: opacity var(--transition-base);
 }
 
+/* ── Journey Badge Enhancements ──────────────────────────────────────────── */
+.journey-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.journey-swap {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0 2px;
+  font-size: 15px;
+  color: var(--text-tertiary);
+  line-height: 1;
+  transition: color var(--transition-fast), transform var(--transition-fast);
+}
+
+.journey-swap:hover {
+  color: var(--primary);
+  transform: scale(1.2) rotate(90deg);
+}
+
 /* ── Live N/A Badge ──────────────────────────────────────────────────────── */
 .offline-badge {
   display: inline-flex;

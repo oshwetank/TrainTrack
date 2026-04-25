@@ -4,7 +4,7 @@
   padding-bottom: 80px;
   background: var(--background);
   min-height: 100vh;
-  animation: slideIn Right var(--transition-base);
+  animation: slideInRight var(--transition-base);
 }
 
 @keyframes slideInRight {
