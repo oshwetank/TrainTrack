@@ -1,0 +1,301 @@
+/* Alerts View */
+.secondary-view {
+  padding: var(--space-md);
+  padding-bottom: 96px;
+  animation: fadeIn var(--transition-base);
+  min-height: 100vh;
+}
+
+.view-header {
+  margin-bottom: var(--space-xl);
+}
+
+.view-header h2 {
+  font-family: var(--font-heading, var(--font-family));
+  font-size: var(--font-size-xl);
+  color: var(--text-primary);
+}
+
+.view-subtitle {
+  font-size: var(--font-size-sm);
+  color: var(--text-tertiary);
+  margin-top: 4px;
+}
+
+/* Alert Cards */
+.alerts-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-md);
+}
+
+.alert-card {
+  background: var(--surface);
+  border-radius: var(--radius-lg);
+  padding: var(--space-md);
+  box-shadow: var(--shadow-sm);
+  border-left: 4px solid transparent;
+}
+
+.alert-card.sev-high   { border-left-color: var(--danger); }
+.alert-card.sev-medium { border-left-color: var(--warning); }
+.alert-card.sev-low    { border-left-color: var(--success); }
+.alert-card.sev-info   { border-left-color: var(--primary); }
+
+.alert-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: var(--space-sm);
+}
+
+.alert-meta {
+  display: flex;
+  gap: var(--space-sm);
+  align-items: center;
+}
+
+.alert-line-tag {
+  font-size: var(--font-size-sm);
+  font-weight: 700;
+  text-transform: uppercase;
+  color: var(--text-secondary);
+  letter-spacing: 0.04em;
+}
+
+.alert-status {
+  font-size: 10px;
+  font-weight: 700;
+  padding: 2px 6px;
+  border-radius: var(--radius-full);
+  background: #F3F4F6;
+  color: var(--text-secondary);
+  letter-spacing: 0.05em;
+}
+
+.alert-sev-badge {
+  font-size: 11px;
+  font-weight: 700;
+  padding: 2px 8px;
+  border-radius: var(--radius-full);
+}
+
+.alert-sev-badge.sev-high   { background: #FEE2E2; color: var(--danger); }
+.alert-sev-badge.sev-medium { background: #FEF3C7; color: var(--warning); }
+.alert-sev-badge.sev-low    { background: #D1FAE5; color: var(--success); }
+.alert-sev-badge.sev-info   { background: #EDE9FE; color: var(--primary); }
+
+.alert-title {
+  font-size: var(--font-size-md);
+  font-weight: 700;
+  color: var(--text-primary);
+  margin-bottom: var(--space-xs);
+}
+
+.alert-message {
+  font-size: var(--font-size-sm);
+  color: var(--text-secondary);
+  line-height: 1.5;
+}
+
+.alert-stations {
+  font-size: var(--font-size-sm);
+  color: var(--text-tertiary);
+  margin-top: var(--space-xs);
+  font-style: italic;
+}
+
+/* Settings View */
+.settings-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-xl);
+}
+
+.settings-section {
+  background: var(--surface);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  box-shadow: var(--shadow-sm);
+}
+
+.settings-section-title {
+  font-size: var(--font-size-sm);
+  font-weight: 700;
+  color: var(--text-tertiary);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  padding: var(--space-sm) var(--space-md);
+  background: var(--background);
+}
+
+.setting-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--space-md);
+  border-top: 1px solid rgba(0,0,0,0.04);
+  cursor: pointer;
+  gap: var(--space-md);
+}
+
+.setting-row.no-interact {
+  cursor: default;
+}
+
+.setting-label {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  flex: 1;
+}
+
+.setting-name {
+  font-size: var(--font-size-base);
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.setting-desc {
+  font-size: var(--font-size-sm);
+  color: var(--text-tertiary);
+}
+
+.setting-value-text {
+  font-size: var(--font-size-sm);
+  color: var(--text-secondary);
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+/* Toggle Switch */
+.toggle-switch {
+  width: 44px;
+  height: 26px;
+  border-radius: var(--radius-full);
+  background: #D1D5DB;
+  position: relative;
+  flex-shrink: 0;
+  transition: background var(--transition-fast);
+  cursor: pointer;
+}
+
+.toggle-switch::after {
+  content: '';
+  position: absolute;
+  top: 3px;
+  left: 3px;
+  width: 20px;
+  height: 20px;
+  background: white;
+  border-radius: 50%;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+  transition: transform var(--transition-fast);
+}
+
+.toggle-switch.on {
+  background: var(--primary);
+}
+
+.toggle-switch.on::after {
+  transform: translateX(18px);
+}
+
+/* Walk time stepper */
+.walk-time-control {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+}
+
+.walk-btn {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  border: 2px solid var(--primary);
+  background: none;
+  color: var(--primary);
+  font-size: 18px;
+  line-height: 1;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background var(--transition-fast), color var(--transition-fast);
+}
+
+.walk-btn:hover {
+  background: var(--primary);
+  color: white;
+}
+
+.walk-value {
+  font-size: var(--font-size-base);
+  font-weight: 700;
+  color: var(--text-primary);
+  min-width: 52px;
+  text-align: center;
+}
+
+/* Journey Tracker Timeline improvements */
+.stop-item {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+  padding: var(--space-sm) 0;
+  position: relative;
+}
+
+.stop-item + .stop-item::before {
+  content: '';
+  position: absolute;
+  top: -50%;
+  left: 7px;
+  width: 2px;
+  height: 50%;
+  background: #E5E7EB;
+}
+
+.stop-item.completed + .stop-item::before { background: var(--success); }
+.stop-item.active    + .stop-item::before { background: linear-gradient(var(--success), #E5E7EB); }
+
+.stop-dot {
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  border: 2px solid #D1D5DB;
+  background: white;
+  flex-shrink: 0;
+  z-index: 1;
+}
+
+.stop-item.completed .stop-dot { border-color: var(--success); background: var(--success); }
+.stop-item.active    .stop-dot { border-color: var(--primary); background: var(--primary); box-shadow: 0 0 0 4px rgba(229,89,52,0.15); }
+
+.stop-info {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.stop-time {
+  font-size: var(--font-size-sm);
+  color: var(--text-tertiary);
+}
+
+.stop-platform {
+  font-size: var(--font-size-sm);
+  font-weight: 600;
+  color: var(--text-secondary);
+  white-space: nowrap;
+}
+
+.in-transit-indicator {
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--primary);
+  letter-spacing: 0.08em;
+  background: rgba(229,89,52,0.1);
+  padding: 2px 6px;
+  border-radius: var(--radius-full);
+}

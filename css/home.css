@@ -303,27 +303,44 @@ section h3 {
   background: rgba(0,0,0,0.02);
 }
 
-/* Line Tab active styling overrides */
+/* ── Line Tab Groups ─────────────────────────────────────────────────────── */
+.line-tabs {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-xs);
+  margin-bottom: var(--space-lg);
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+.line-tabs::-webkit-scrollbar { display: none; }
+
+.tab-group {
+  display: flex;
+  gap: var(--space-xs);
+}
+
+.tab-group-metro {
+  padding-top: var(--space-xs);
+  border-top: 1px solid rgba(0,0,0,0.06);
+}
+
 .line-tab {
-  transition: background var(--transition-base), color var(--transition-base);
+  padding: var(--space-xs) var(--space-md);
+  border-radius: var(--radius-full);
+  border: 1.5px solid rgba(0,0,0,0.08);
+  background: var(--surface);
+  font-size: var(--font-size-sm);
+  font-weight: 600;
+  cursor: pointer;
+  white-space: nowrap;
+  color: var(--text-secondary);
+  transition: background var(--transition-base), color var(--transition-base), border-color var(--transition-base);
 }
 
-.line-tab.tab-western.active {
-  background-color: var(--primary);
-  color: white;
-}
-
-.line-tab.tab-central.active {
-  background-color: var(--danger);
-  color: white;
-}
-
-.line-tab.tab-harbour.active {
-  background-color: var(--warning); /* using warning or another custom hex if wanted */
-  color: white;
-}
-
-.line-tab.tab-trans-harbour.active {
-  background-color: var(--success);
-  color: white;
-}
+.line-tab.tab-western.active      { background: var(--western,      var(--primary));  color: white; border-color: transparent; }
+.line-tab.tab-central.active      { background: var(--central,      var(--danger));   color: white; border-color: transparent; }
+.line-tab.tab-harbour.active      { background: var(--harbour,      #1D4ED8);         color: white; border-color: transparent; }
+.line-tab.tab-trans-harbour.active{ background: var(--trans-harbour, var(--success));  color: white; border-color: transparent; }
+.line-tab.tab-metro-aqua.active   { background: var(--metro-aqua,   #009688);          color: white; border-color: transparent; }
+.line-tab.tab-metro-red.active    { background: var(--metro-red,    #E53935);           color: white; border-color: transparent; }
+.line-tab.tab-metro-yellow.active { background: var(--metro-yellow, #F9A825);           color: var(--text-primary); border-color: transparent; }

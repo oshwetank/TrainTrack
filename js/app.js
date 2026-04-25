@@ -1,5 +1,5 @@
 import { createTrainCard } from './components/trainCard.js';
-import { initJourneyTracker, updateETA } from './components/journeyTracker.js';
+import { initJourneyTracker, updateETA, stopJourneyTracking } from './components/journeyTracker.js';
 import { initBottomNav } from './components/bottomNav.js';
 import { initSearch } from './components/searchUI.js';
 import { getGreeting, calculateCountdown, calculateETA } from './utils/timeUtils.js';
@@ -14,7 +14,7 @@ import { getNextDepartures, escapeHTML } from './utils/dataUtils.js';
  *              hydrate with RailRadar live data in background.
  *              Background Sync API for schedule refresh on reconnect.
  * Performance: All DOM mutations via requestAnimationFrame
- *              30-second live polling (paused on Page Visibility hidden)
+ *              60-second live polling (paused on Page Visibility hidden)
  *              AbortSignal.timeout(8000) on all outbound fetches
  *
  * Modules:
@@ -39,20 +39,20 @@ const TrainTrack = (() => {
      1. CONFIG
      ========================================================================= */
   const Config = Object.freeze({
-    VERSION: '1.4.2',
+    VERSION: '1.5.0',
 
     /* Static dataset - served from same origin, always available */
     SCHEDULES_URL:    './schedules.json',
     DISRUPTIONS_URL:  './disruptions.json',
 
-    /* RailRadar live API - third-party aggregator (railradar.in) */
-    RAILRADAR_BASE: 'https://railradar.in/api',
+    /* Cloudflare Worker CORS proxy — forwards to railradar.in with API key */
+    RAILRADAR_BASE: 'https://traintrack-proxy.oshwetank.workers.dev/proxy',
 
     /* How long (ms) before a live API response is considered stale */
-    CACHE_TTL_MS: 30_000,
+    CACHE_TTL_MS: 60_000,
 
     /* Polling interval for live hydration */
-    POLL_INTERVAL_MS: 30_000,
+    POLL_INTERVAL_MS: 60_000,
 
     /* localStorage keys */
     LS_LINE:       'tt_line',
@@ -70,8 +70,8 @@ const TrainTrack = (() => {
     IDB_VERSION: 2,
     IDB_STORE:   'schedule-cache',
 
-    /* Suburban Lines */
-    LINES: ['western', 'central', 'harbour', 'trans_harbour'],
+    /* All lines (suburban + metro) — used for station indexing */
+    LINES: ['western', 'central', 'harbour', 'trans_harbour', 'metro_aqua', 'metro_red', 'metro_yellow'],
     LINE_COLORS: {
       western: '#3b82f6',
       central: '#ef4444',
@@ -369,8 +369,8 @@ const TrainTrack = (() => {
       /* Click handler */
       tabs.forEach(tab => {
         tab.addEventListener('click', () => {
+          _requestNotifPermission();
           const selectedLine = tab.dataset.line;
-          Store.savePrefs({ line: selectedLine });
 
           tabs.forEach(t => {
             t.classList.remove('active');
@@ -401,15 +401,19 @@ const TrainTrack = (() => {
         const cached = await Store.getCachedSchedules();
         if (cached) {
           _scheduleData = cached;
-                      Search.index(cached);  // Index cached stations for immediate search
+          Search.index(cached);
           _renderHome();
+          _renderSavedJourneys();
         }
 
         const { data: freshData } = await API.loadSchedules();
         _scheduleData = freshData;
         await Store.cacheSchedules(freshData);
-                    Search.index(freshData);  // Index stations for search autocomplete
-        if (!cached) _renderHome();
+        Search.index(freshData);
+        if (!cached) {
+          _renderHome();
+          _renderSavedJourneys();
+        }
 
       } catch (e) {
         console.error('[TrainTrack] Failed to 
@@ -425,10 +429,17 @@ const TrainTrack = (() => {
       }
 
       setInterval(_updateCountdowns, 60_000);
+      _scheduleDepartureAlert();
+      setInterval(_scheduleDepartureAlert, 60_000);
 
       window.addEventListener('online', () => {
         console.log('[TrainTrack] Back online — refreshing…');
         _renderHome();
+      });
+
+      window.addEventListener('traintrack:station-changed', () => {
+        _renderHome();
+        _renderSavedJourneys();
       });
     }
 
@@ -460,8 +471,22 @@ const TrainTrack = (() => {
       }
 
       /* Render train cards */
+      const favs = Store.getFavourites();
       upcoming.forEach(t => {
-        const card = createTrainCard(t);
+        const rawFrom = t.from || t.origin || (t.route || t.stops || [])[0] || '';
+        const rawTo   = t.to || t.destination || ((t.route || t.stops || []).at(-1)) || '';
+        const rawLine = t.line || prefs.line;
+        const savedKey = `${rawFrom}|${rawTo}|${rawLine}`;
+        const isSaved  = favs.some(f => `${f.from}|${f.to}|${f.line}` === savedKey);
+
+        const card = createTrainCard(t, {
+          isSaved,
+          onSave: (from, to, line, nowSaved) => {
+            if (nowSaved) Store.addFavourite(from, to, line);
+            else          Store.removeFavourite(from, to, line);
+            _renderSavedJourneys();
+          },
+        });
 
         card.addEventListener('click', () => {
           const hc = document.querySelector('.home-container');
@@ -470,9 +495,10 @@ const TrainTrack = (() => {
           if (jt) jt.style.display = 'block';
 
           initJourneyTracker(t, () => {
+            stopJourneyTracking();
+            if (_activeTrainPoll) clearInterval(_activeTrainPoll);
             if (hc) hc.style.display = 'block';
             if (jt) jt.style.display = 'none';
-            if (_activeTrainPoll) clearInterval(_activeTrainPoll);
           });
 
           const route = t.route || t.stops || [];
@@ -510,9 +536,11 @@ const TrainTrack = (() => {
         const toLabel   = escapeHTML(next.to || (route.length ? route[route.length - 1] : ''));
         const typeStr   = escapeHTML(next.type || 'Local');
         
-        const countdownStr = calculateCountdown(next.departures?.[0]?.time || '00:00');
-        const isStatusText = isNaN(parseInt(countdownStr));
+        const countdownRaw = calculateCountdown(next.departures?.[0]?.time || '00:00');
+        const countdownNum = parseInt(countdownRaw, 10);
+        const isStatusText = isNaN(countdownNum);
         const timeClass = isStatusText ? 'time text-sm' : 'time';
+        const displayStr = isStatusText ? escapeHTML(countdownRaw) : String(countdownNum);
 
         hero.innerHTML = `
           <div class="route-info">
@@ -521,7 +549,7 @@ const TrainTrack = (() => {
           </div>
           <div class="departure-info">
             <div class="countdown">
-              <span class="${timeClass}" id="hero-countdown">${countdownStr}</span>
+              <span class="${timeClass}" id="hero-countdown">${displayStr}</span>
               ${isStatusText ? '' : '<span class="unit">MINUTES</span>'}
             </div>
             <div class="platform">Platform ${escapeHTML(String(next.departures?.[0]?.platform || 1))}</div>
@@ -532,6 +560,7 @@ const TrainTrack = (() => {
           const hc = document.querySelector('.home-container');
           const jt = document.getElementById('journeyTracker');
           initJourneyTracker(next, () => {
+            stopJourneyTracking();
             if (hc) hc.style.display = 'block';
             if (jt) jt.style.display = 'none';
           });
@@ -539,6 +568,90 @@ const TrainTrack = (() => {
           if (jt) jt.style.display = 'block';
         });
       }
+    }
+
+    /* Segment C: departure alert — fires when next train is ≤ walkTime+10 min away */
+    let _lastAlertedTrain = null;
+    function _scheduleDepartureAlert() {
+      if (!_scheduleData) return;
+      if (typeof Notification === 'undefined' || Notification.permission !== 'granted') return;
+
+      const prefs     = Store.getPrefs();
+      const line      = prefs.line || 'western';
+      const allTrains = _scheduleData?.trains?.[line] || [];
+      const upcoming  = prefs.from ? getNextDepartures(allTrains, prefs.from, 1) : [];
+      if (!upcoming.length) return;
+
+      const next       = upcoming[0];
+      const depTime    = next.departures?.[0]?.time || next.departureTime;
+      if (!depTime) return;
+
+      const walkMins   = ls_get_raw(Config.WALK_TIME_KEY) ?? Config.DEFAULT_WALK_TIME;
+      const threshold  = walkMins + 10;
+      const nowMins    = new Date().getHours() * 60 + new Date().getMinutes();
+      const [dh, dm]   = depTime.split(':').map(Number);
+      const depMins    = dh * 60 + dm;
+      const minsAway   = depMins - nowMins;
+
+      const alertKey = `${next.trainNo}:${depTime}`;
+      if (minsAway > 0 && minsAway <= threshold && _lastAlertedTrain !== alertKey) {
+        _lastAlertedTrain = alertKey;
+        new Notification('TrainTrack — Time to leave!', {
+          body: `${escapeHTML(next.name || 'Your train')} departs in ${minsAway} min. Walk time: ${walkMins} min.`,
+          icon: './icons/icon-192.png',
+          badge: './icons/icon-192.png',
+          tag: 'departure-alert',
+        });
+      }
+    }
+
+    /* Request notification permission on first meaningful interaction */
+    function _requestNotifPermission() {
+      if (typeof Notification !== 'undefined' && Notification.permission === 'default') {
+        Notification.requestPermission();
+      }
+    }
+
+    function ls_get_raw(key) {
+      try { return JSON.parse(localStorage.getItem(key)); } catch { return null; }
+    }
+
+    function _renderSavedJourneys() {
+      const container = document.querySelector('.journey-list');
+      if (!container) return;
+
+      const favs = Store.getFavourites();
+      container.innerHTML = '';
+
+      if (favs.length === 0) {
+        container.innerHTML = '<p class="no-saved-hint">Tap the bookmark on a train to save a journey.</p>';
+        return;
+      }
+
+      favs.forEach(({ from, to, line }) => {
+        const badge = document.createElement('button');
+        badge.className = 'journey-badge';
+        badge.innerHTML = `
+          <span>${escapeHTML(from)} → ${escapeHTML(to)}</span>
+          <button class="journey-remove" aria-label="Remove saved journey" title="Remove">×</button>
+        `;
+
+        badge.addEventListener('click', (e) => {
+          if (e.target.closest('.journey-remove')) return;
+          Store.savePrefs({ from, to, line });
+          _renderHome();
+          _renderSavedJourneys();
+        });
+
+        badge.querySelector('.journey-remove').addEventListener('click', (e) => {
+          e.stopPropagation();
+          Store.removeFavourite(from, to, line);
+          _renderSavedJourneys();
+          _renderHome();
+        });
+
+        container.appendChild(badge);
+      });
     }
 
     function _updateCountdowns() {

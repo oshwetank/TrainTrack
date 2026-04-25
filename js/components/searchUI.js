@@ -41,9 +41,9 @@ export function initSearch(App, Store, SearchModule) {
 
   function handleStationSelect(station) {
     Store.savePrefs({ from: station.code, line: station.line });
-    // Tell App to re-render to reflect new preference
-    if (App.boot) App.boot(); 
     closeSearch();
+    // Signal re-render via custom event (avoids re-running full boot)
+    window.dispatchEvent(new CustomEvent('traintrack:station-changed'));
   }
 
   function renderResults(query) {

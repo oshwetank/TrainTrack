@@ -253,32 +253,7 @@ svg { display: block; flex-shrink: 0; }
   gap: var(--sp-4);
 }
 
-/* Line tabs */
-.line-tabs {
-  display: flex;
-  gap: var(--sp-2);
-  background: var(--surface-lowest);
-  padding: var(--sp-1);
-  border-radius: var(--r-md);
-}
-
-.line-tab {
-  flex: 1;
-  padding: var(--sp-2) var(--sp-3);
-  border-radius: calc(var(--r-md) - 2px);
-  font-size: 13px;
-  font-weight: 600;
-  color: var(--on-surface-variant);
-  transition: background var(--dur-fast) var(--ease),
-              color var(--dur-fast) var(--ease),
-              transform var(--dur-fast) var(--ease);
-  transform: translateZ(0);
-}
-.line-tab:active { transform: scale(.97) translateZ(0); }
-
-.line-tab.tab-western.active { background: var(--line-western); color: #fff; }
-.line-tab.tab-central.active { background: var(--line-central); color: #fff; }
-.line-tab.tab-harbour.active { background: var(--line-harbour); color: #fff; }
+/* Line tabs — managed in home.css */
 
 /* Station inputs */
 .station-inputs {

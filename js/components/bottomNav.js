@@ -1,36 +1,61 @@
-/**
- * Bottom Nav Component
- */
+import { initAlertsView }   from './alertsView.js';
+import { initSettingsView } from './settingsView.js';
+
+const VIEWS = {
+  home:     () => document.querySelector('.home-container'),
+  alerts:   () => document.getElementById('alertsView'),
+  settings: () => document.getElementById('settingsView'),
+};
+
+let _activeView = 'home';
+
+function hideAll() {
+  document.querySelector('.home-container')?.style.setProperty('display', 'none');
+  document.getElementById('journeyTracker')?.style.setProperty('display', 'none');
+  document.getElementById('alertsView')?.style.setProperty('display', 'none');
+  document.getElementById('settingsView')?.style.setProperty('display', 'none');
+}
 
 export function initBottomNav() {
   const navItems = document.querySelectorAll('.bottom-nav .nav-item');
-  const homeContainer = document.querySelector('.home-container');
-  const journeyTracker = document.getElementById('journeyTracker');
-  
+
   navItems.forEach(item => {
-    item.addEventListener('click', () => {
-      // Update active state
-      navItems.forEach(nav => nav.classList.remove('active'));
-      item.classList.add('active');
-      
+    item.addEventListener('click', async () => {
       const view = item.dataset.view;
-      
-      // Simple routing
+      if (view === _activeView) return;
+      _activeView = view;
+
+      navItems.forEach(n => n.classList.remove('active'));
+      item.classList.add('active');
+
+      hideAll();
+
       if (view === 'home') {
-        if (homeContainer) homeContainer.style.display = 'block';
-        if (journeyTracker) journeyTracker.style.display = 'none';
-      } else {
-        // Mocking alerts/settings - trigger a toast/alert then reset active class
-        alert(view.charAt(0).toUpperCase() + view.slice(1) + ' view coming soon!');
-        
-        // Push active state back to home
-        navItems.forEach(nav => nav.classList.remove('active'));
-        const homeNav = Array.from(navItems).find(n => n.dataset.view === 'home');
-        if (homeNav) homeNav.classList.add('active');
-        
-        if (homeContainer) homeContainer.style.display = 'block';
-        if (journeyTracker) journeyTracker.style.display = 'none';
+        document.querySelector('.home-container').style.display = 'block';
+        return;
+      }
+
+      if (view === 'alerts') {
+        const el = document.getElementById('alertsView');
+        el.style.display = 'block';
+        await initAlertsView(el);
+        return;
+      }
+
+      if (view === 'settings') {
+        const el = document.getElementById('settingsView');
+        el.style.display = 'block';
+        initSettingsView(el);
+        return;
       }
     });
+  });
+}
+
+/* Called by app.js when journey tracker opens/closes */
+export function setActiveViewToHome() {
+  _activeView = 'home';
+  document.querySelectorAll('.bottom-nav .nav-item').forEach(n => {
+    n.classList.toggle('active', n.dataset.view === 'home');
   });
 }

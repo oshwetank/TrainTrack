@@ -10,7 +10,7 @@
   <meta name="apple-mobile-web-app-title" content="TrainTrack" />
 
   <title>TrainTrack — Mumbai Local</title>
-  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; connect-src 'self' https://railradar.in; img-src 'self' data: https:; frame-ancestors 'none';" />
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; connect-src 'self' https://traintrack-proxy.oshwetank.workers.dev; img-src 'self' data: https:; frame-ancestors 'none';" />
 
   <!-- PWA Manifest (relative path — works at root and on GitHub Pages) -->
   <link rel="manifest" href="./manifest.json" />
@@ -36,10 +36,17 @@
     </header>
 
     <nav class="line-tabs" aria-label="Railway line">
-      <button class="line-tab tab-western active" type="button" data-line="western" aria-current="page">Western</button>
-      <button class="line-tab tab-central" type="button" data-line="central">Central</button>
-      <button class="line-tab tab-harbour" type="button" data-line="harbour">Harbour</button>
-      <button class="line-tab tab-trans-harbour" type="button" data-line="trans_harbour">Trans-Harbour</button>
+      <div class="tab-group" aria-label="Suburban lines">
+        <button class="line-tab tab-western active" type="button" data-line="western" aria-current="page">Western</button>
+        <button class="line-tab tab-central" type="button" data-line="central">Central</button>
+        <button class="line-tab tab-harbour" type="button" data-line="harbour">Harbour</button>
+        <button class="line-tab tab-trans-harbour" type="button" data-line="trans_harbour">Trans-Harbour</button>
+      </div>
+      <div class="tab-group tab-group-metro" aria-label="Metro lines">
+        <button class="line-tab tab-metro-aqua" type="button" data-line="metro_aqua">Metro 1</button>
+        <button class="line-tab tab-metro-red" type="button" data-line="metro_red">Metro 2A</button>
+        <button class="line-tab tab-metro-yellow" type="button" data-line="metro_yellow">Metro 7</button>
+      </div>
     </nav>
 
     <section class="next-train-card" id="nextTrainCard" aria-label="Next train">
@@ -49,15 +56,7 @@
     <section class="saved-journeys" id="savedJourneys">
       <h3>Saved Journeys</h3>
       <div class="journey-list">
-        <!-- Dynamically populated -->
-        <button class="journey-badge">
-           <span>VR → CCG</span>
-           <span class="arrow">↩</span>
-        </button>
-        <button class="journey-badge">
-           <span>BVI → ADH</span>
-           <span class="arrow">↩</span>
-        </button>
+        <!-- Dynamically populated by app.js _renderSavedJourneys() -->
       </div>
     </section>
 
@@ -107,6 +106,16 @@
   <!-- Journey Tracker View (hidden by default) -->
   <div class="journey-tracker-container" id="journeyTracker" style="display: none;" aria-label="Journey tracker">
     <!-- Populated by journeyTracker.js -->
+  </div>
+
+  <!-- Alerts View (hidden by default) -->
+  <div class="secondary-view" id="alertsView" style="display: none;" aria-label="Service alerts">
+    <!-- Populated by alertsView.js -->
+  </div>
+
+  <!-- Settings View (hidden by default) -->
+  <div class="secondary-view" id="settingsView" style="display: none;" aria-label="Settings">
+    <!-- Populated by settingsView.js -->
   </div>
 
   <!-- ES6 MODULE IMPORT (relative path — works at root and on GitHub Pages) -->
