@@ -241,3 +241,98 @@ TrainTrack v1.5.2 was deployed and tested live. The council-approved bug fixes a
 **Report compiled:** 26 April 2026, 3:30 AM IST
 **Tester:** Comet (automated browser agent)
 **Next test:** Schedule for daytime window (post-5 AM first service)
+
+
+## ADDENDUM: QA Human-Style Exploration (3:30 AM IST)
+
+Following the initial systematic test, a second exploration was conducted simulating a real human QA tester interacting naturally with the app — testing edge cases, exploring hidden features, and observing visual/UX details.
+
+### Additional Findings
+
+#### ✅ Confirmed Working (Not Previously Tested)
+
+1. **Search empty state** — Typing gibberish like "xyz123" shows a crossed-circle icon and "No stations found for 'xyz123'" message. Good error handling.
+
+2. **Search clear button** — An ✕ button appears in the search input when typing, allowing quick clearing of the input. Good UX.
+
+3. **Empty state line name fix (partial)** — In this test session, the empty state message correctly updated to "No upcoming trains on the **central** line", "No upcoming trains on the **harbour** line", "No upcoming trains on the **metro-red** line" when switching tabs. This was broken in the first test session and showing "western" for all tabs. Suggests deployment/caching issue or a race condition.
+
+4. **Dark mode toggle** — Clicking the Dark mode toggle in Settings immediately switches the entire app to a dark blue-grey theme with white text. The visual contrast is good and readable. Toggle state shows correctly (orange when ON).
+
+5. **Search autocomplete speed** — Typing a single letter ("b") instantly shows all matching stations (Mumbai Central, Bandra, Borivali, Bhayander, Vasai Road, Boisar, Byculla, Bhandup) with correct line colour dots (W orange for Western, C red for Central). Very responsive.
+
+6. **Walk time controls** — The +/- buttons for "Walk time to station" in Settings work. Default is 10 min. Touch targets are adequately sized (circular orange buttons).
+
+#### ❌ New Issues Found
+
+1. **Dark mode does not persist** — Enabling Dark mode in Settings and then refreshing the page (F5) or navigating back to the root URL resets the app to light mode. The setting is not saved to localStorage.
+
+2. **Bottom nav disappears in Settings/Alerts views** — After clicking Settings or Alerts in the bottom nav, the nav bar itself is no longer visible/accessible. Scrolling up or down does not reveal it. The only way to return to Home is to refresh the page or navigate to the root URL. This makes the app feel "stuck" in Settings/Alerts with no clear escape route for the user.
+
+   **Impact:** Critical navigation bug. Users entering Settings/Alerts cannot return to Home without a full page reload. The "append-below" layout issue is worse than initially documented — the nav is not just hidden by scroll, it's completely inaccessible.
+
+3. **Header "Settings" button missing** — In this test session, the header only showed a search icon (magnifying glass) at top-right. There was no "Settings" text button and thus no overlap issue. The "SeaSettings" overlap bug from the first test is inconsistent/intermittent.
+
+#### 🔍 Visual/UX Observations
+
+1. **Line tab pill colours** — All line tabs use correct brand colours when active:
+   - Western: Orange (#E65100 or similar)
+   - Central: Red (#B91C1C or similar)
+   - Harbour: Blue (#2563EB or similar)
+   - Trans-Harbour: Green (#059669 or similar)
+   - Metro 1: Teal (#0D9488 or similar)
+   - Metro 2A: Red (#DC2626 or similar)
+   - Metro 7: Yellow (not tested in detail)
+
+   Visual polish is good. The pills have adequate padding and rounded corners.
+
+2. **Hero card visual** — The hero card is a large rounded rectangle with uniform orange/amber fill. The text "No trains in the next 2 hours" is center-aligned. There is no gradient, no ring, and no visual progress indicator as specified in the v1.5.2 design. This confirms the earlier finding that the new hero card design is not implemented.
+
+3. **Typography** — The app uses a clean sans-serif font (likely Inter or system-ui). Headings are bold and adequately sized. Body text is readable. The greeting "Good morning, Traveler" is friendly and context-aware (it's 3 AM, technically morning).
+
+4. **Spacing** — Overall spacing between sections (hero card, Saved Journeys, Next Trains) is consistent and comfortable. No cramped layouts observed.
+
+5. **Touch targets** — All interactive elements (line tabs, nav buttons, search icon, toggle switches, +/- buttons) appear to be at least 44x44px, meeting accessibility guidelines for touch targets.
+
+6. **Empty state iconography** — The empty train list uses a train emoji 🚆 + station marker icon. The search "no results" state uses a crossed-circle icon 🚫. Both are clear and appropriate.
+
+#### 🧪 Edge Case Tests
+
+- **Search with numbers:** "xyz123" → correctly shows "No stations found"
+- **Search with single letter:** "b" → shows 8 results instantly
+- **Tab rapid switching:** Western → Central → Harbour → Trans-Harbour → Metro 1 → Metro 2A — all tabs switch active state smoothly with no visual glitches
+- **Dark mode toggle while in Settings view:** Works instantly, entire Settings view turns dark
+- **Refresh while in Settings view:** Dark mode resets to light, Settings view still shows (no return to Home)
+
+---
+
+### Updated Issue Summary
+
+| Issue | First Test | QA Exploration | Severity |
+|-------|------------|----------------|----------|
+| View routing (append-below) | CRITICAL | **WORSE — nav completely inaccessible** | 🔴 P0 |
+| Empty state line name | Bug (stuck on "western") | **Fixed in this session** (inconsistent) | 🟡 P1 (flaky) |
+| Header button overlap | Medium ("SeaSettings") | **Not present** (inconsistent) | 🟡 P1 (intermittent) |
+| Hero card design | Missing | Confirmed missing | 🔴 P0 |
+| Dark mode persistence | Not tested | **Broken — does not save to localStorage** | 🟡 P2 |
+| Bottom nav disappearance | Suspected | **Confirmed — critical navigation blocker** | 🔴 P0 |
+
+---
+
+### QA Verdict
+
+**The app is NOT production-ready.** The bottom nav disappearance in Settings/Alerts views is a show-stopper. Users have no way to navigate back to Home without refreshing the page, which is unacceptable UX for a single-page PWA.
+
+**Positive notes:**
+- Search is fast, responsive, and handles edge cases well
+- Line tab switching works correctly (when empty state bug doesn't appear)
+- Dark mode rendering is visually good (despite not persisting)
+- Typography and spacing are well-executed
+- Touch targets meet accessibility standards
+
+**Critical action required:** Fix bottom nav routing before any public release.
+
+---
+
+**QA Test completed:** 26 April 2026, 3:35 AM IST
+**Tester:** Comet (simulating human QA exploration)
