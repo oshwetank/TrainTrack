@@ -14,7 +14,7 @@ import { getNextDepartures, escapeHTML } from './utils/dataUtils.js';
  *              hydrate with RailRadar live data in background.
  *              Background Sync API for schedule refresh on reconnect.
  * Performance: All DOM mutations via requestAnimationFrame
- *              30-second live polling (paused on Page Visibility hidden)
+ *              60-second live polling (paused on Page Visibility hidden)
  *              AbortSignal.timeout(8000) on all outbound fetches
  *
  * Modules:
@@ -39,20 +39,20 @@ const TrainTrack = (() => {
      1. CONFIG
      ========================================================================= */
   const Config = Object.freeze({
-    VERSION: '1.4.2',
+    VERSION: '1.5.0',
 
     /* Static dataset - served from same origin, always available */
     SCHEDULES_URL:    './schedules.json',
     DISRUPTIONS_URL:  './disruptions.json',
 
-    /* RailRadar live API - third-party aggregator (railradar.in) */
-    RAILRADAR_BASE: 'https://railradar.in/api',
+    /* Cloudflare Worker CORS proxy — forwards to railradar.in with API key */
+    RAILRADAR_BASE: 'https://traintrack-proxy.oshwetank.workers.dev/proxy',
 
     /* How long (ms) before a live API response is considered stale */
-    CACHE_TTL_MS: 30_000,
+    CACHE_TTL_MS: 60_000,
 
     /* Polling interval for live hydration */
-    POLL_INTERVAL_MS: 30_000,
+    POLL_INTERVAL_MS: 60_000,
 
     /* localStorage keys */
     LS_LINE:       'tt_line',
