@@ -1,6 +1,6 @@
 import { createTrainCard } from './components/trainCard.js';
 import { initJourneyTracker, updateETA, stopJourneyTracking } from './components/journeyTracker.js';
-import { initBottomNav } from './components/bottomNav.js';
+import { initBottomNav, setActiveViewToHome } from './components/bottomNav.js';
 import { initSearch } from './components/searchUI.js';
 import { getGreeting, calculateCountdown, calculateETA } from './utils/timeUtils.js';
 import { getNextDepartures, escapeHTML, timeoutSignal } from './utils/dataUtils.js';
@@ -513,8 +513,9 @@ const TrainTrack = (() => {
           initJourneyTracker(t, () => {
             stopJourneyTracking();
             if (_activeTrainPoll) clearInterval(_activeTrainPoll);
-            if (hc) hc.style.display = 'block';
             if (jt) jt.style.display = 'none';
+            if (hc) hc.style.display = 'block';
+            setActiveViewToHome();
           });
 
           const route = t.route || t.stops || [];
@@ -582,8 +583,9 @@ const TrainTrack = (() => {
           const jt = document.getElementById('journeyTracker');
           initJourneyTracker(next, () => {
             stopJourneyTracking();
-            if (hc) hc.style.display = 'block';
             if (jt) jt.style.display = 'none';
+            if (hc) hc.style.display = 'block';
+            setActiveViewToHome();
           });
           if (hc) hc.style.display = 'none';
           if (jt) jt.style.display = 'block';
