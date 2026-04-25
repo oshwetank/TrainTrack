@@ -1,4 +1,5 @@
 import { escapeHTML } from '../utils/dataUtils.js';
+import { calculateCountdown } from '../utils/timeUtils.js';
 
 const BOOKMARK_OUTLINE = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"></path></svg>`;
 const BOOKMARK_FILLED  = `<svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"></path></svg>`;
@@ -23,11 +24,19 @@ export function createTrainCard(train, opts = {}) {
   const rawFrom  = train.from || train.origin || route[0] || '';
   const rawTo    = train.to || train.destination || (route.length ? route[route.length - 1] : '') || '';
   const rawLine  = train.line || '';
+  if (rawLine) tpl.classList.add(`line-${rawLine.replace(/_/g, '-')}`);
   const tOrigin  = escapeHTML(rawFrom);
   const tDest    = escapeHTML(rawTo);
-  const tTime    = escapeHTML(train.departures?.[0]?.time || train.departureTime || '00:00');
+  const depTimeRaw = train.departures?.[0]?.time || train.departureTime || '';
+  const tTime    = escapeHTML(depTimeRaw || '00:00');
   const tPlatform = escapeHTML(train.departures?.[0]?.platform || train.platform || '-');
   const stopsLen = escapeHTML(String(route.length));
+  const initialCountdown = (() => {
+    if (!depTimeRaw) return '';
+    const raw = calculateCountdown(depTimeRaw);
+    const num = parseInt(raw, 10);
+    return isNaN(num) ? raw : `in ${num} min`;
+  })();
 
   tpl.innerHTML = `
     <div class="train-header">
@@ -43,8 +52,9 @@ export function createTrainCard(train, opts = {}) {
     </div>
     <div class="train-details">
       <span class="departure-time"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg> ${tTime}</span>
-      <span class="platform">Platform ${tPlatform}</span>
+      <span class="platform">Plat ${tPlatform}</span>
       <span class="stops">${stopsLen} stops</span>
+      ${depTimeRaw ? `<span class="train-card-countdown" data-departure="${escapeHTML(depTimeRaw)}">${escapeHTML(initialCountdown)}</span>` : ''}
     </div>
   `;
 

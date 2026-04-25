@@ -5,6 +5,21 @@ import { escapeHTML } from '../utils/dataUtils.js';
  * Handles the display and logic of the Station Search modal.
  */
 
+const RECENT_KEY   = 'tt_recent_searches';
+const RECENT_LIMIT = 5;
+
+function _getRecent() {
+  try { return JSON.parse(localStorage.getItem(RECENT_KEY)) ?? []; }
+  catch { return []; }
+}
+
+function _addRecent(station) {
+  const recent = _getRecent().filter(s => !(s.code === station.code && s.line === station.line));
+  recent.unshift({ code: station.code, name: station.name, line: station.line });
+  try { localStorage.setItem(RECENT_KEY, JSON.stringify(recent.slice(0, RECENT_LIMIT))); }
+  catch {}
+}
+
 export function initSearch(App, Store, SearchModule) {
   const btnHeaderSearch = document.getElementById('btnHeaderSearch');
   const searchContainer = document.getElementById('searchContainer');
@@ -40,24 +55,45 @@ export function initSearch(App, Store, SearchModule) {
   }
 
   function handleStationSelect(station) {
+    _addRecent(station);
     Store.savePrefs({ from: station.code, line: station.line });
     closeSearch();
-    // Signal re-render via custom event (avoids re-running full boot)
     window.dispatchEvent(new CustomEvent('traintrack:station-changed'));
   }
 
+  function _buildResultItem(station, isRecent = false) {
+    const el = document.createElement('div');
+    el.className = `search-result-item${isRecent ? ' search-result-recent' : ''}`;
+    el.dataset.line = escapeHTML(station.line);
+    const lineInitial = station.line === 'trans_harbour' ? 'T' : station.line.charAt(0).toUpperCase();
+    el.innerHTML = `
+      <div class="search-result-icon">${lineInitial}</div>
+      <div class="search-result-details">
+        <span class="search-result-name">${escapeHTML(station.name)}</span>
+        <span class="search-result-line">${escapeHTML(station.line.replace(/_/g, '-'))} Line</span>
+      </div>`;
+    el.addEventListener('click', () => handleStationSelect(station));
+    return el;
+  }
+
   function renderResults(query) {
-    const results = SearchModule.query(query);
+    searchResults.innerHTML = '';
 
     if (!query || query.length === 0) {
-      searchResults.innerHTML = `
-        <div class="search-placeholder">
-          <span class="search-icon" aria-hidden="true">🔍</span>
-          <p>Type to search stations</p>
-        </div>`;
+      const recent = _getRecent();
+      if (recent.length === 0) {
+        searchResults.innerHTML = `
+          <div class="search-placeholder">
+            <span class="search-icon" aria-hidden="true">🔍</span>
+            <p>Type to search stations</p>
+          </div>`;
+        return;
+      }
+      recent.forEach(s => searchResults.appendChild(_buildResultItem(s, true)));
       return;
     }
 
+    const results = SearchModule.query(query);
     if (results.length === 0) {
       searchResults.innerHTML = `
         <div class="search-placeholder">
@@ -67,26 +103,7 @@ export function initSearch(App, Store, SearchModule) {
       return;
     }
 
-    // Render results
-    searchResults.innerHTML = '';
-    results.forEach(station => {
-      const el = document.createElement('div');
-      el.className = 'search-result-item';
-      el.dataset.line = escapeHTML(station.line);
-      
-      const lineInitial = (station.line === 'trans_harbour' ? 'T' : station.line.charAt(0).toUpperCase());
-      
-      el.innerHTML = `
-        <div class="search-result-icon">${lineInitial}</div>
-        <div class="search-result-details">
-          <span class="search-result-name">${escapeHTML(station.name)}</span>
-          <span class="search-result-line">${escapeHTML(station.line.replace('_', '-'))} Line</span>
-        </div>
-      `;
-      
-      el.addEventListener('click', () => handleStationSelect(station));
-      searchResults.appendChild(el);
-    });
+    results.forEach(s => searchResults.appendChild(_buildResultItem(s, false)));
   }
 
   // Event Listeners

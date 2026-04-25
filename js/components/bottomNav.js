@@ -10,7 +10,8 @@ function _getEl(view) {
 }
 
 function _hideAll() {
-  document.querySelector('.home-container')?.classList.remove('view-active');
+  const home = document.querySelector('.home-container');
+  if (home) home.style.display = 'none';
   document.getElementById('journeyTracker')?.classList.remove('view-active');
   document.getElementById('alertsView')?.classList.remove('view-active');
   document.getElementById('settingsView')?.classList.remove('view-active');

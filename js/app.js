@@ -339,6 +339,8 @@ const TrainTrack = (() => {
   const App = (() => {
     let _scheduleData = null;
     let _activeTrainPoll = null;
+    let _pollId = null;
+    let _alertId = null;
 
     /* -- 5a. Show loading skeleton in the train list -- */
     function _setLoading(loading) {
@@ -379,6 +381,7 @@ const TrainTrack = (() => {
           tab.classList.add('active');
           tab.setAttribute('aria-current', 'page');
 
+          Store.savePrefs({ line: selectedLine });
           if (_scheduleData) _renderHome();
         });
       });
@@ -428,9 +431,22 @@ const TrainTrack = (() => {
         }
       }
 
-      setInterval(_updateCountdowns, 60_000);
+      _updateCountdowns();
+      _pollId  = setInterval(_updateCountdowns, 60_000);
       _scheduleDepartureAlert();
-      setInterval(_scheduleDepartureAlert, 60_000);
+      _alertId = setInterval(_scheduleDepartureAlert, 60_000);
+
+      document.addEventListener('visibilitychange', () => {
+        if (document.hidden) {
+          clearInterval(_pollId);
+          clearInterval(_alertId);
+        } else {
+          _updateCountdowns();
+          _scheduleDepartureAlert();
+          _pollId  = setInterval(_updateCountdowns, 60_000);
+          _alertId = setInterval(_scheduleDepartureAlert, 60_000);
+        }
+      });
 
       window.addEventListener('online', () => {
         console.log('[TrainTrack] Back online — refreshing…');
@@ -536,25 +552,30 @@ const TrainTrack = (() => {
         const toLabel   = escapeHTML(next.to || (route.length ? route[route.length - 1] : ''));
         const typeStr   = escapeHTML(next.type || 'Local');
         
-        const countdownRaw = calculateCountdown(next.departures?.[0]?.time || '00:00');
+        const depTimeRaw   = next.departures?.[0]?.time || '00:00';
+        const countdownRaw = calculateCountdown(depTimeRaw);
         const countdownNum = parseInt(countdownRaw, 10);
         const isStatusText = isNaN(countdownNum);
-        const timeClass = isStatusText ? 'time text-sm' : 'time';
-        const displayStr = isStatusText ? escapeHTML(countdownRaw) : String(countdownNum);
+        const displayStr   = isStatusText ? escapeHTML(countdownRaw) : String(countdownNum);
+        const pct          = isStatusText ? 0 : Math.max(0, Math.min(100, ((120 - countdownNum) / 120) * 100));
+        const platform     = escapeHTML(String(next.departures?.[0]?.platform || 1));
 
+        hero.style.setProperty('--progress', `${pct}%`);
         hero.innerHTML = `
-          <div class="route-info">
-            <h2>${fromLabel} to ${toLabel}</h2>
-            <span class="train-type">${typeStr}</span>
-          </div>
-          <div class="departure-info">
-            <div class="countdown">
-              <span class="${timeClass}" id="hero-countdown">${displayStr}</span>
-              ${isStatusText ? '' : '<span class="unit">MINUTES</span>'}
+          <div class="hero-body">
+            <div class="hero-route-info">
+              <h2>${fromLabel} → ${toLabel}</h2>
+              <span class="hero-train-type">${typeStr}</span>
+              <span class="hero-platform">Platform ${platform}</span>
             </div>
-            <div class="platform">Platform ${escapeHTML(String(next.departures?.[0]?.platform || 1))}</div>
+            <div class="hero-ring-wrapper" aria-label="${displayStr}${isStatusText ? '' : ' minutes until departure'}">
+              <div class="hero-ring">
+                <span class="hero-countdown" id="hero-countdown" data-departure="${escapeHTML(depTimeRaw)}">${displayStr}</span>
+                ${isStatusText ? '' : '<span class="hero-unit">min</span>'}
+              </div>
+            </div>
           </div>
-          <button class="cta-button" id="btnHeroLeavNow">Leave Now!</button>`;
+          <button class="cta-button" id="btnHeroLeavNow">Leave Now</button>`;
 
         document.getElementById('btnHeroLeavNow')?.addEventListener('click', () => {
           const hc = document.querySelector('.home-container');
@@ -616,6 +637,12 @@ const TrainTrack = (() => {
       try { return JSON.parse(localStorage.getItem(key)); } catch { return null; }
     }
 
+    const _LINE_VAR = {
+      western: '--western', central: '--central', harbour: '--harbour',
+      trans_harbour: '--trans-harbour', metro_aqua: '--metro-aqua',
+      metro_red: '--metro-red', metro_yellow: '--metro-yellow',
+    };
+
     function _renderSavedJourneys() {
       const container = document.querySelector('.journey-list');
       if (!container) return;
@@ -629,16 +656,38 @@ const TrainTrack = (() => {
       }
 
       favs.forEach(({ from, to, line }) => {
-        const badge = document.createElement('button');
+        const lineVar = _LINE_VAR[line] || '--primary';
+        const badge = document.createElement('div');
         badge.className = 'journey-badge';
+        badge.tabIndex = 0;
+        badge.setAttribute('role', 'button');
+        badge.setAttribute('aria-label', `Select ${from} to ${to} journey`);
         badge.innerHTML = `
-          <span>${escapeHTML(from)} → ${escapeHTML(to)}</span>
+          <span class="journey-dot" style="background:var(${lineVar})" aria-hidden="true"></span>
+          <span class="journey-route">${escapeHTML(from)} → ${escapeHTML(to)}</span>
+          <button class="journey-swap" aria-label="Swap direction" title="Swap">⇄</button>
           <button class="journey-remove" aria-label="Remove saved journey" title="Remove">×</button>
         `;
 
         badge.addEventListener('click', (e) => {
-          if (e.target.closest('.journey-remove')) return;
+          if (e.target.closest('.journey-remove') || e.target.closest('.journey-swap')) return;
           Store.savePrefs({ from, to, line });
+          _renderHome();
+          _renderSavedJourneys();
+        });
+
+        badge.addEventListener('keydown', (e) => {
+          if (e.key === 'Enter' || e.key === ' ') {
+            e.preventDefault();
+            Store.savePrefs({ from, to, line });
+            _renderHome();
+            _renderSavedJourneys();
+          }
+        });
+
+        badge.querySelector('.journey-swap').addEventListener('click', (e) => {
+          e.stopPropagation();
+          Store.savePrefs({ from: to, to: from, line });
           _renderHome();
           _renderSavedJourneys();
         });
@@ -655,7 +704,25 @@ const TrainTrack = (() => {
     }
 
     function _updateCountdowns() {
-      _renderHome();
+      /* Update hero countdown */
+      const heroEl = document.getElementById('hero-countdown');
+      if (heroEl?.dataset.departure) {
+        const raw = calculateCountdown(heroEl.dataset.departure);
+        const num = parseInt(raw, 10);
+        heroEl.textContent = isNaN(num) ? raw : String(num);
+        const hero = document.getElementById('nextTrainCard');
+        if (hero && !isNaN(num)) {
+          const pct = Math.max(0, Math.min(100, ((120 - num) / 120) * 100));
+          hero.style.setProperty('--progress', `${pct}%`);
+        }
+      }
+
+      /* Update all train card countdown pills */
+      document.querySelectorAll('.train-card-countdown[data-departure]').forEach(el => {
+        const raw = calculateCountdown(el.dataset.departure);
+        const num = parseInt(raw, 10);
+        el.textContent = isNaN(num) ? raw : `in ${num} min`;
+      });
     }
 
     return { boot, getScheduleData: () => _scheduleData };
