@@ -401,15 +401,19 @@ const TrainTrack = (() => {
         const cached = await Store.getCachedSchedules();
         if (cached) {
           _scheduleData = cached;
-                      Search.index(cached);  // Index cached stations for immediate search
+          Search.index(cached);
           _renderHome();
+          _renderSavedJourneys();
         }
 
         const { data: freshData } = await API.loadSchedules();
         _scheduleData = freshData;
         await Store.cacheSchedules(freshData);
-                    Search.index(freshData);  // Index stations for search autocomplete
-        if (!cached) _renderHome();
+        Search.index(freshData);
+        if (!cached) {
+          _renderHome();
+          _renderSavedJourneys();
+        }
 
       } catch (e) {
         console.error('[TrainTrack] Failed to 
@@ -460,8 +464,22 @@ const TrainTrack = (() => {
       }
 
       /* Render train cards */
+      const favs = Store.getFavourites();
       upcoming.forEach(t => {
-        const card = createTrainCard(t);
+        const rawFrom = t.from || t.origin || (t.route || t.stops || [])[0] || '';
+        const rawTo   = t.to || t.destination || ((t.route || t.stops || []).at(-1)) || '';
+        const rawLine = t.line || prefs.line;
+        const savedKey = `${rawFrom}|${rawTo}|${rawLine}`;
+        const isSaved  = favs.some(f => `${f.from}|${f.to}|${f.line}` === savedKey);
+
+        const card = createTrainCard(t, {
+          isSaved,
+          onSave: (from, to, line, nowSaved) => {
+            if (nowSaved) Store.addFavourite(from, to, line);
+            else          Store.removeFavourite(from, to, line);
+            _renderSavedJourneys();
+          },
+        });
 
         card.addEventListener('click', () => {
           const hc = document.querySelector('.home-container');
@@ -539,6 +557,44 @@ const TrainTrack = (() => {
           if (jt) jt.style.display = 'block';
         });
       }
+    }
+
+    function _renderSavedJourneys() {
+      const container = document.querySelector('.journey-list');
+      if (!container) return;
+
+      const favs = Store.getFavourites();
+      container.innerHTML = '';
+
+      if (favs.length === 0) {
+        container.innerHTML = '<p class="no-saved-hint">Tap the bookmark on a train to save a journey.</p>';
+        return;
+      }
+
+      favs.forEach(({ from, to, line }) => {
+        const badge = document.createElement('button');
+        badge.className = 'journey-badge';
+        badge.innerHTML = `
+          <span>${escapeHTML(from)} → ${escapeHTML(to)}</span>
+          <button class="journey-remove" aria-label="Remove saved journey" title="Remove">×</button>
+        `;
+
+        badge.addEventListener('click', (e) => {
+          if (e.target.closest('.journey-remove')) return;
+          Store.savePrefs({ from, to, line });
+          _renderHome();
+          _renderSavedJourneys();
+        });
+
+        badge.querySelector('.journey-remove').addEventListener('click', (e) => {
+          e.stopPropagation();
+          Store.removeFavourite(from, to, line);
+          _renderSavedJourneys();
+          _renderHome();
+        });
+
+        container.appendChild(badge);
+      });
     }
 
     function _updateCountdowns() {

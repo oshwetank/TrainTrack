@@ -131,6 +131,52 @@
   to { transform: rotate(360deg); }
 }
 
+/* ── Save / Bookmark Button on Train Cards ───────────────────────────────── */
+.save-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 4px;
+  border-radius: var(--radius-sm);
+  color: var(--text-tertiary);
+  display: flex;
+  align-items: center;
+  transition: color var(--transition-fast), transform var(--transition-fast);
+  flex-shrink: 0;
+}
+
+.save-btn:hover {
+  color: var(--warning);
+  transform: scale(1.15);
+}
+
+.save-btn.saved {
+  color: var(--warning);
+}
+
+/* ── Journey Chip Remove Button ──────────────────────────────────────────── */
+.journey-remove {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0 0 0 4px;
+  font-size: 16px;
+  line-height: 1;
+  color: var(--text-tertiary);
+  transition: color var(--transition-fast);
+}
+
+.journey-remove:hover {
+  color: var(--danger);
+}
+
+.no-saved-hint {
+  font-size: var(--font-size-sm);
+  color: var(--text-tertiary);
+  padding: var(--space-xs) 0;
+  white-space: nowrap;
+}
+
 /* ── Live N/A Badge ──────────────────────────────────────────────────────── */
 .offline-badge {
   display: inline-flex;
