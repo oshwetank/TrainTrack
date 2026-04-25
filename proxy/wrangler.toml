@@ -1,12 +1,9 @@
 name = "traintrack-proxy"
 main = "worker.js"
 compatibility_date = "2024-01-01"
+workers_dev = true
 
 [vars]
 # RAILRADAR_API_KEY is set as a secret via:
 #   wrangler secret put RAILRADAR_API_KEY
 # Never put the actual key here.
-
-[[routes]]
-pattern = "traintrack-proxy.oshwetank.workers.dev/*"
-zone_name = "workers.dev"
