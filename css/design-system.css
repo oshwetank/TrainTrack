@@ -1,22 +1,36 @@
-/* Amber Dawn Design System */
+/* Transit Flow Design System — v1.5.0 */
 :root {
   /* Primary Colors */
   --primary: #E55934;
-  --primary-dark: #AF624D;
-  --primary-light: #A78100;
-  
+  --primary-dark: #C94122;
+  --primary-light: #FF7D57;
+
   /* Neutrals */
   --background: #FDFBF7;
   --surface: #FFFFFF;
-  --text-primary: #1A1A1A;
+  --text-primary: #2B2A29;
   --text-secondary: #6B6B6B;
   --text-tertiary: #9E9E9E;
-  
+
   /* Status Colors */
-  --success: #2E7D32;
+  --success: #38B000;
   --warning: #F57C00;
   --danger: #D32F2F;
-  
+
+  /* Mumbai Local Line Colors */
+  --western:     #E55934;
+  --central:     #B91C1C;
+  --harbour:     #1D4ED8;
+  --trans-harbour: #D97706;
+
+  /* Metro Line Colors */
+  --metro-aqua:   #009688;
+  --metro-red:    #E53935;
+  --metro-yellow: #F9A825;
+
+  /* Future Modes */
+  --interstate: #4361EE;
+
   /* Spacing Scale */
   --space-xs: 4px;
   --space-sm: 8px;
@@ -24,26 +38,28 @@
   --space-lg: 24px;
   --space-xl: 32px;
   --space-2xl: 48px;
-  
+
   /* Typography */
-  --font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+  --font-heading: 'Outfit', system-ui, -apple-system, sans-serif;
+  --font-body:    'Be Vietnam Pro', system-ui, -apple-system, sans-serif;
+  --font-family:  var(--font-body);
   --font-size-sm: 12px;
   --font-size-base: 14px;
   --font-size-md: 16px;
   --font-size-lg: 20px;
   --font-size-xl: 24px;
   --font-size-2xl: 32px;
-  
+
   /* Border Radius */
   --radius-sm: 4px;
-  --radius-md: 8px;
-  --radius-lg: 12px;
+  --radius-md: 12px;
+  --radius-lg: 24px;
   --radius-full: 9999px;
-  
-  /* Shadows */
-  --shadow-sm: 0 1px 2px rgba(0,0,0,0.05);
-  --shadow-md: 0 4px 6px rgba(0,0,0,0.1);
-  --shadow-lg: 0 10px 15px rgba(0,0,0,0.1);
+
+  /* Shadows — ultra-faint, large spread (cards float, not drop-shadow) */
+  --shadow-sm: 0 2px 8px rgba(0,0,0,0.04);
+  --shadow-md: 0 8px 24px rgba(0,0,0,0.06);
+  --shadow-lg: 0 16px 48px rgba(0,0,0,0.07);
   
   /* Transitions */
   --transition-fast: 150ms ease-in-out;
@@ -76,6 +92,7 @@ body {
 
 /* Typography */
 h1, h2, h3, h4, h5, h6 {
+  font-family: var(--font-heading);
   font-weight: 700;
   line-height: 1.2;
 }
