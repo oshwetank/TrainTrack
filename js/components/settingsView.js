@@ -1,7 +1,7 @@
 const LS_CLOCK24  = 'tt_clock24';
 const LS_REFRESH  = 'tt_autorefresh';
 const WALK_KEY    = 'traintrack_walk_time';
-const APP_VERSION = '1.5.0';
+const APP_VERSION = '1.5.3';
 
 function ls_get(key, fb) {
   try { return JSON.parse(localStorage.getItem(key)) ?? fb; } catch { return fb; }

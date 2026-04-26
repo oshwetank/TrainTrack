@@ -12,9 +12,12 @@ function _getEl(view) {
 function _hideAll() {
   const home = document.querySelector('.home-container');
   if (home) home.style.display = 'none';
-  document.getElementById('journeyTracker')?.classList.remove('view-active');
-  document.getElementById('alertsView')?.classList.remove('view-active');
-  document.getElementById('settingsView')?.classList.remove('view-active');
+  ['journeyTracker', 'alertsView', 'settingsView'].forEach(id => {
+    const el = document.getElementById(id);
+    if (!el) return;
+    el.style.display = 'none';
+    el.classList.remove('view-active');
+  });
 }
 
 function _show(el) {

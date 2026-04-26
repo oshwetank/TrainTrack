@@ -15,7 +15,7 @@
  *   self.registration.scope to normalise pathnames at runtime.
  */
 
-const CACHE_VERSION = 'traintrack-v1.5.2';
+const CACHE_VERSION = 'traintrack-v1.5.3';
 const STATIC_CACHE  = `traintrack-static-${CACHE_VERSION}`;
 const DATA_CACHE    = `traintrack-data-${CACHE_VERSION}`;
 const ALL_CACHES    = [STATIC_CACHE, DATA_CACHE];

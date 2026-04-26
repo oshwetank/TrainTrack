@@ -39,7 +39,7 @@ const TrainTrack = (() => {
      1. CONFIG
      ========================================================================= */
   const Config = Object.freeze({
-    VERSION: '1.5.0',
+    VERSION: '1.5.3',
 
     /* Static dataset - served from same origin, always available */
     SCHEDULES_URL:    './schedules.json',
@@ -72,13 +72,6 @@ const TrainTrack = (() => {
 
     /* All lines (suburban + metro) — used for station indexing */
     LINES: ['western', 'central', 'harbour', 'trans_harbour', 'metro_aqua', 'metro_red', 'metro_yellow'],
-    LINE_COLORS: {
-      western: '#3b82f6',
-      central: '#ef4444',
-      harbour: '#8b5cf6',
-      trans_harbour: '#10b981',
-    },
-
     /* Metro Lines (operational 2026) */
     METRO_LINES: [
       { id: 'metro_aqua',   name: 'Metro Line 1 (Aqua)',   color: '#06b6d4' },
@@ -475,14 +468,31 @@ const TrainTrack = (() => {
 
       /* Empty state */
       if (upcoming.length === 0) {
+        const lineNames = {
+          western: 'Western',
+          central: 'Central',
+          harbour: 'Harbour',
+          trans_harbour: 'Trans-Harbour',
+          metro_aqua: 'Metro Line 1 (Aqua)',
+          metro_red: 'Metro Line 2A (Red)',
+          metro_yellow: 'Metro Line 7 (Yellow)'
+        };
+        const displayName = lineNames[line] || line.replace('_', '-');
+
         list.innerHTML = `
           <div class="empty-state" role="status">
             <span class="empty-icon" aria-hidden="true">🚉</span>
-            <p>No upcoming trains on the <strong>${line.replace('_', '-')}</strong> line.</p>
+            <p>No upcoming trains on the <strong>${displayName}</strong> line.</p>
             <p class="empty-hint">Try a different line or check back soon.</p>
           </div>`;
         const hero = document.getElementById('nextTrainCard');
-        if (hero) hero.innerHTML = '<p class="empty-hero">No trains in the next 2 hours.</p>';
+        if (hero) {
+          hero.innerHTML = `
+            <div class="empty-hero">
+              <span class="empty-hero-icon" aria-hidden="true">🕰️</span>
+              <p>No trains in the next 2 hours.</p>
+            </div>`;
+        }
         return;
       }
 

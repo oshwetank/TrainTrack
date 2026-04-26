@@ -33,6 +33,13 @@
   --warning: #F57C00;
   --danger:  #D32F2F;
 
+  /* ── Status tints (backgrounds for badges/chips) ─────────── */
+  --danger-tint:  #FEE2E2;
+  --warning-tint: #FEF3C7;
+  --success-tint: #D1FAE5;
+  --info-tint:    #EDE9FE;
+  --neutral-tint: #F3F4F6;
+
   /* ── Spacing ──────────────────────────────────────────────── */
   --space-xs:  4px;
   --space-sm:  8px;
@@ -44,7 +51,6 @@
   /* ── Typography ───────────────────────────────────────────── */
   --font-heading: 'Outfit', system-ui, sans-serif;
   --font-body:    'Be Vietnam Pro', system-ui, sans-serif;
-  --font-family:  'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
 
   /* Fluid type scale — clamp(min, preferred, max) */
   --font-size-sm:   clamp(0.6875rem, 0.65rem + 0.2vw, 0.75rem);   /* 11–12px */
